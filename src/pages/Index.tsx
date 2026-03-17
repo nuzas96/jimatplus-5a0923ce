@@ -1,16 +1,54 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import LandingPage from '@/components/LandingPage';
+import InputFlow from '@/components/InputFlow';
+import CalculatingScreen from '@/components/CalculatingScreen';
+import ResultsDashboard from '@/components/ResultsDashboard';
+import SurvivalPlan from '@/components/SurvivalPlan';
+import ShoppingSummary from '@/components/ShoppingSummary';
+import { UserInput, SurvivalResult } from '@/lib/types';
+import { calculateSurvival } from '@/lib/survival-engine';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+type Screen = 'landing' | 'input' | 'calculating' | 'results' | 'plan' | 'shopping';
+
+const Index = () => {
+  const [screen, setScreen] = useState<Screen>('landing');
+  const [input, setInput] = useState<UserInput | null>(null);
+  const [result, setResult] = useState<SurvivalResult | null>(null);
+
+  const handleSubmit = useCallback((userInput: UserInput) => {
+    setInput(userInput);
+    setScreen('calculating');
+    const survivalResult = calculateSurvival(userInput);
+    setResult(survivalResult);
+  }, []);
+
+  const handleCalcComplete = useCallback(() => {
+    setScreen('results');
+  }, []);
+
+  const restart = useCallback(() => {
+    setScreen('landing');
+    setInput(null);
+    setResult(null);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <AnimatePresence mode="wait">
+      {screen === 'landing' && <LandingPage onStart={() => setScreen('input')} />}
+      {screen === 'input' && <InputFlow onSubmit={handleSubmit} onBack={() => setScreen('landing')} />}
+      {screen === 'calculating' && <CalculatingScreen onComplete={handleCalcComplete} />}
+      {screen === 'results' && result && input && (
+        <ResultsDashboard result={result} input={input} onViewPlan={() => setScreen('plan')} onBack={() => setScreen('input')} />
+      )}
+      {screen === 'plan' && result && (
+        <SurvivalPlan result={result} onViewShopping={() => setScreen('shopping')} onBack={() => setScreen('results')} />
+      )}
+      {screen === 'shopping' && result && input && (
+        <ShoppingSummary result={result} input={input} onRestart={restart} onBack={() => setScreen('plan')} />
+      )}
+    </AnimatePresence>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
