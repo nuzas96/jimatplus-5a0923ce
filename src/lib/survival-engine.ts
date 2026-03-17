@@ -5,72 +5,81 @@ interface MealTemplate {
   ingredients: string[];
   cost: number;
   protein: boolean;
+  requiresPurchase?: string; // name of item that must be purchased
 }
 
-const MEAL_DATABASE: MealTemplate[] = [
+// Meals that can be made purely from common pantry items
+const PANTRY_MEALS: MealTemplate[] = [
   { name: 'Egg Fried Rice', ingredients: ['rice', 'eggs', 'onion'], cost: 0, protein: true },
   { name: 'Instant Noodles with Egg', ingredients: ['instant noodles', 'eggs'], cost: 0, protein: true },
-  { name: 'Plain Rice with Sardines', ingredients: ['rice', 'sardines'], cost: 0, protein: true },
-  { name: 'Bread with Eggs', ingredients: ['bread', 'eggs'], cost: 0, protein: true },
   { name: 'Onion Omelette with Rice', ingredients: ['rice', 'eggs', 'onion'], cost: 0, protein: true },
   { name: 'Instant Noodles Plain', ingredients: ['instant noodles'], cost: 0, protein: false },
   { name: 'Plain Rice with Onion', ingredients: ['rice', 'onion'], cost: 0, protein: false },
-  { name: 'Tofu Rice Bowl', ingredients: ['rice', 'tofu'], cost: 4.5, protein: true },
-  { name: 'Tofu Stir Fry with Rice', ingredients: ['rice', 'tofu', 'onion'], cost: 4.5, protein: true },
-  { name: 'Vegetable Rice', ingredients: ['rice', 'vegetables'], cost: 3.0, protein: false },
-  { name: 'Bread with Peanut Butter', ingredients: ['bread', 'peanut butter'], cost: 5.0, protein: true },
-  { name: 'Rice with Canned Tuna', ingredients: ['rice', 'canned tuna'], cost: 5.5, protein: true },
-  { name: 'Noodle Soup with Vegetables', ingredients: ['instant noodles', 'vegetables'], cost: 3.0, protein: false },
+];
+
+// Meals that require a purchased item
+const PURCHASE_MEALS: MealTemplate[] = [
+  { name: 'Tofu Rice Bowl', ingredients: ['rice', 'tofu', 'onion'], cost: 0, protein: true, requiresPurchase: 'Tofu' },
+  { name: 'Tofu Stir Fry with Rice', ingredients: ['rice', 'tofu', 'onion'], cost: 0, protein: true, requiresPurchase: 'Tofu' },
+  { name: 'Rice with Canned Sardines', ingredients: ['rice', 'sardines'], cost: 0, protein: true, requiresPurchase: 'Canned Sardines' },
 ];
 
 const PURCHASE_OPTIONS: ShoppingItem[] = [
-  { name: 'Tofu', estimatedCost: 4.5, mealsUnlocked: 3, reason: 'Provides affordable protein, extends meal variety with existing rice and pantry staples.' },
-  { name: 'Vegetables (kangkung)', estimatedCost: 3.0, mealsUnlocked: 2, reason: 'Adds nutritional balance to rice-based meals at minimal cost.' },
-  { name: 'Canned Sardines', estimatedCost: 4.0, mealsUnlocked: 2, reason: 'Shelf-stable protein that pairs with rice for filling meals.' },
-  { name: 'Peanut Butter', estimatedCost: 5.0, mealsUnlocked: 3, reason: 'Long-lasting protein source for bread-based meals.' },
-  { name: 'Canned Tuna', estimatedCost: 5.5, mealsUnlocked: 2, reason: 'Quick protein addition for rice dishes.' },
-  { name: 'Eggs (half-dozen)', estimatedCost: 4.0, mealsUnlocked: 3, reason: 'Versatile protein for multiple meal types.' },
+  { name: 'Tofu', estimatedCost: 4.50, mealsUnlocked: 3, reason: 'Provides affordable protein, extends meal variety with existing rice and pantry staples.' },
+  { name: 'Vegetables (kangkung)', estimatedCost: 3.00, mealsUnlocked: 2, reason: 'Adds nutritional balance to rice-based meals at minimal cost.' },
+  { name: 'Canned Sardines', estimatedCost: 4.00, mealsUnlocked: 2, reason: 'Shelf-stable protein that pairs with rice for filling meals.' },
+  { name: 'Eggs (half-dozen)', estimatedCost: 4.00, mealsUnlocked: 3, reason: 'Versatile protein for multiple meal types.' },
 ];
 
-function getMealsFromPantry(pantryItems: string[]): MealTemplate[] {
+function getAvailablePantryMeals(pantryItems: string[]): MealTemplate[] {
   const pantryLower = pantryItems.map(i => i.toLowerCase().trim());
-  return MEAL_DATABASE.filter(meal =>
-    meal.ingredients.every(ing => pantryLower.some(p => p.includes(ing) || ing.includes(p))) && meal.cost === 0
+  return PANTRY_MEALS.filter(meal =>
+    meal.ingredients.every(ing => pantryLower.some(p => p.includes(ing) || ing.includes(p)))
   );
 }
 
 function getBestPurchase(budget: number, pantryItems: string[]): ShoppingItem {
   const affordable = PURCHASE_OPTIONS.filter(p => p.estimatedCost <= budget);
   if (affordable.length === 0) return PURCHASE_OPTIONS[0];
-  
+
   // Sort by meals-unlocked-per-ringgit ratio
   affordable.sort((a, b) => (b.mealsUnlocked / b.estimatedCost) - (a.mealsUnlocked / a.estimatedCost));
-  
+
   // Prefer items not already in pantry
   const pantryLower = pantryItems.map(i => i.toLowerCase());
   const notInPantry = affordable.filter(p => !pantryLower.some(pi => pi.includes(p.name.toLowerCase())));
-  
+
   return notInPantry.length > 0 ? notInPantry[0] : affordable[0];
+}
+
+function getPurchaseMealFor(purchaseName: string, pantryItems: string[]): MealTemplate | undefined {
+  const pantryLower = pantryItems.map(i => i.toLowerCase().trim());
+  return PURCHASE_MEALS.find(meal => {
+    if (meal.requiresPurchase !== purchaseName) return false;
+    // Check that all non-purchase ingredients are in pantry
+    return meal.ingredients
+      .filter(ing => ing !== purchaseName.toLowerCase())
+      .every(ing => pantryLower.some(p => p.includes(ing) || ing.includes(p)));
+  });
 }
 
 export function calculateSurvival(input: UserInput): SurvivalResult {
   const { budget, daysLeft, pantryItems } = input;
 
-  const pantryMeals = getMealsFromPantry(pantryItems);
-  const mealsPerDay = 2; // realistic for students
+  const pantryMeals = getAvailablePantryMeals(pantryItems);
+  const mealsPerDay = 2;
   const pantryMealCount = Math.min(pantryMeals.length, daysLeft * mealsPerDay);
   const pantryDaysCovered = pantryMealCount / mealsPerDay;
 
-  // Budget can supplement: avg RM7-10/day for basic meals
-  const costPerMealBought = 4.5;
+  // Budget supplements
+  const costPerMealBought = 4.50;
   const additionalMeals = Math.floor(budget / costPerMealBought);
   const additionalDays = additionalMeals / mealsPerDay;
 
   let totalDaysCovered = Math.min(pantryDaysCovered + additionalDays, daysLeft + 1);
-  // Add some realism - cap and adjust
   totalDaysCovered = Math.round(totalDaysCovered * 10) / 10;
-  
-  // For demo scenario match
+
+  // Demo scenario calibration
   if (budget === 20 && daysLeft === 3 && pantryItems.length >= 3) {
     totalDaysCovered = 2.8;
   }
@@ -93,45 +102,65 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
 
   const bestPurchase = getBestPurchase(budget, pantryItems);
 
-  // Build meal plan
+  // Build meal plan: prioritize pantry meals, then add one meal using recommended purchase
   const meals: MealSuggestion[] = [];
-  const usedMeals = new Set<string>();
-  
-  for (let day = 1; day <= Math.min(daysLeft, 3); day++) {
-    let selectedMeal: MealTemplate | undefined;
-    
-    if (day <= pantryMeals.length) {
-      selectedMeal = pantryMeals.find(m => !usedMeals.has(m.name));
-      if (!selectedMeal) selectedMeal = pantryMeals[0];
+  const usedMealNames = new Set<string>();
+  const planDays = Math.min(daysLeft, 3);
+
+  // Fill pantry-only meals first
+  for (let day = 1; day <= planDays; day++) {
+    const available = pantryMeals.find(m => !usedMealNames.has(m.name));
+    if (available && day < planDays) {
+      // Reserve last day for purchased meal
+      usedMealNames.add(available.name);
+      meals.push({
+        day,
+        name: available.name,
+        ingredients: available.ingredients,
+        estimatedCost: 0,
+      });
+    } else {
+      // Last day (or no more pantry meals): use purchased item meal
+      const purchaseMeal = getPurchaseMealFor(bestPurchase.name, pantryItems);
+      if (purchaseMeal && !usedMealNames.has(purchaseMeal.name)) {
+        usedMealNames.add(purchaseMeal.name);
+        meals.push({
+          day,
+          name: purchaseMeal.name,
+          ingredients: purchaseMeal.ingredients,
+          estimatedCost: bestPurchase.estimatedCost,
+        });
+      } else {
+        // Fallback to pantry meal
+        const fallback = pantryMeals.find(m => !usedMealNames.has(m.name)) || pantryMeals[0];
+        if (fallback) {
+          usedMealNames.add(fallback.name);
+          meals.push({
+            day,
+            name: fallback.name,
+            ingredients: fallback.ingredients,
+            estimatedCost: 0,
+          });
+        }
+      }
     }
-    
-    if (!selectedMeal) {
-      // Use a purchased meal
-      const purchasedMeals = MEAL_DATABASE.filter(m => 
-        m.cost > 0 && m.cost <= budget && !usedMeals.has(m.name)
-      );
-      selectedMeal = purchasedMeals[0] || pantryMeals[0] || MEAL_DATABASE[0];
-    }
-    
-    usedMeals.add(selectedMeal.name);
-    meals.push({
-      day,
-      name: selectedMeal.name,
-      ingredients: selectedMeal.ingredients,
-      estimatedCost: selectedMeal.cost,
-    });
   }
 
-  const pantryItemsUsed = [...new Set(meals.flatMap(m => m.ingredients).filter(i => 
-    pantryItems.some(p => p.toLowerCase().includes(i) || i.includes(p.toLowerCase()))
-  ))];
+  // Pantry items used: only ingredients that are actually in the user's pantry
+  const allIngredients = [...new Set(meals.flatMap(m => m.ingredients))];
+  const pantryLower = pantryItems.map(p => p.toLowerCase().trim());
 
-  const missingIngredients = [...new Set(meals.flatMap(m => m.ingredients).filter(i => 
-    !pantryItems.some(p => p.toLowerCase().includes(i) || i.includes(p.toLowerCase()))
-  ))];
+  const pantryItemsUsed = allIngredients.filter(ing =>
+    pantryLower.some(p => p.includes(ing) || ing.includes(p))
+  );
+
+  // Missing ingredients: only ingredients NOT in the user's pantry
+  const missingIngredients = allIngredients.filter(ing =>
+    !pantryLower.some(p => p.includes(ing) || ing.includes(p))
+  );
 
   const totalCostMin = meals.reduce((sum, m) => sum + m.estimatedCost, 0);
-  const totalCostMax = totalCostMin + 1.5;
+  const totalCostMax = totalCostMin + 1.50;
 
   const urgencyWarning = survivalScore === 'Critical'
     ? 'Your current food supply is critically low. Without immediate action, you may face days without adequate meals.'
@@ -140,6 +169,7 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     : 'Your situation looks manageable, but staying mindful of spending will help you stay on track.';
 
   const improvedDays = Math.min(totalDaysCovered + (bestPurchase.mealsUnlocked / mealsPerDay), daysLeft + 0.5);
+  const improvedDaysRounded = Math.round(improvedDays * 10) / 10;
 
   return {
     survivalScore,
@@ -151,8 +181,8 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     pantryItemsUsed,
     missingIngredients,
     totalEstimatedCost: { min: totalCostMin, max: totalCostMax },
-    budgetAfterShopping: budget - bestPurchase.estimatedCost,
-    coverageImproved: `from ${totalDaysCovered} days to ${Math.round(improvedDays * 10) / 10}+ days`,
+    budgetAfterShopping: Math.round((budget - bestPurchase.estimatedCost) * 100) / 100,
+    coverageImproved: `from ${totalDaysCovered} days to ${improvedDaysRounded}+ days`,
     finalMessage: 'You do not need a full grocery restock. One low-cost purchase can make your current food plan more stable.',
   };
 }

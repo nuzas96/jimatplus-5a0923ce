@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ShoppingCart, CheckCircle2, ArrowUpRight } from 'lucide-react';
+import { ChevronLeft, ShoppingCart, CheckCircle2, ArrowUpRight, List } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ShoppingSummaryProps {
@@ -23,11 +23,11 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         </button>
 
         <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-          <h2 className="font-display text-3xl text-foreground mb-2">Minimal Shopping Summary</h2>
+          <h2 className="font-display text-3xl text-foreground mb-2">Shopping Summary</h2>
           <p className="text-muted-foreground mb-8">One smart purchase to stabilize your food plan.</p>
         </motion.div>
 
-        {/* Best purchase */}
+        {/* Best Next Purchase */}
         <motion.div {...fadeUp} transition={{ delay: 0.1, duration: 0.4 }}
           className="bg-status-safe/5 border border-status-safe/20 p-6 rounded-2xl mb-4"
         >
@@ -39,6 +39,23 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           <p className="font-mono text-lg text-foreground mt-1">RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground mt-2">
             {result.cheapestNextPurchase.reason}
+          </p>
+        </motion.div>
+
+        {/* Minimal Shopping List */}
+        <motion.div {...fadeUp} transition={{ delay: 0.15, duration: 0.4 }}
+          className="bg-card p-5 rounded-2xl shadow-card mb-4"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <List className="w-4 h-4 text-primary" />
+            <span className="font-label text-foreground">Minimal Shopping List</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+            <span className="text-sm text-foreground font-medium">{result.cheapestNextPurchase.name}</span>
+            <span className="font-mono text-sm text-foreground">RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            This is the only item you need to buy. Everything else comes from your existing pantry.
           </p>
         </motion.div>
 
@@ -54,7 +71,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
               <span className="font-mono font-semibold text-status-tight">– RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between p-5 bg-muted/50">
-              <span className="text-sm font-medium text-foreground">Estimated Remaining</span>
+              <span className="text-sm font-medium text-foreground">Estimated Remaining Budget</span>
               <span className="font-mono font-bold text-foreground">RM{result.budgetAfterShopping.toFixed(2)}</span>
             </div>
           </div>
@@ -67,7 +84,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             <span className="font-mono text-2xl font-bold text-foreground">{result.cheapestNextPurchase.mealsUnlocked}</span>
           </div>
           <div className="bg-card p-5 rounded-2xl shadow-card">
-            <span className="font-label text-muted-foreground block mb-1">Coverage</span>
+            <span className="font-label text-muted-foreground block mb-1">Coverage Improved</span>
             <div className="flex items-center gap-1">
               <ArrowUpRight className="w-4 h-4 text-status-safe" />
               <span className="text-sm font-medium text-status-safe-foreground">{result.coverageImproved}</span>
