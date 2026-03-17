@@ -46,7 +46,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
           className="flex flex-col items-center p-8 bg-card rounded-2xl shadow-elevated mb-4"
         >
-          <span className="font-label text-muted-foreground mb-2">Estimated Coverage</span>
+          <span className="font-label text-muted-foreground mb-2">Estimated Days Covered</span>
           <div className={`w-40 h-40 rounded-full border-4 ${colors.border} flex flex-col items-center justify-center mb-3`}>
             <div className="font-mono text-6xl font-bold text-foreground">{result.daysCovered}</div>
             <span className="text-sm text-muted-foreground">days</span>
@@ -63,7 +63,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             <span className={`text-lg font-bold ${colors.text}`}>{result.survivalScore}</span>
           </div>
           <div className="bg-card p-5 rounded-2xl shadow-card">
-            <span className="font-label text-muted-foreground block mb-1">Confidence</span>
+            <span className="font-label text-muted-foreground block mb-1">Confidence Level</span>
             <span className={`text-lg font-bold ${confidenceColors[result.confidenceLevel]}`}>{result.confidenceLevel}</span>
           </div>
         </motion.div>
@@ -71,7 +71,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         {/* Explanation */}
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Your current pantry and remaining RM{input.budget} budget can almost cover the next {input.daysLeft} days, but the plan is still fragile.
+            Your current pantry and remaining RM{input.budget.toFixed(2)} budget can almost cover the next {input.daysLeft} days, but the plan is still fragile.
           </p>
         </motion.div>
 
@@ -115,7 +115,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         {/* Reasoning */}
         <motion.div {...fadeUp} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-8">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Your pantry already supports simple rice-based meals. A low-cost protein addition improves meal variety and extends coverage more efficiently than higher-cost items.
+            Your pantry already supports a few low-cost meals. One small purchase can extend your plan and reduce the risk of running out before your next allowance.
           </p>
         </motion.div>
 
