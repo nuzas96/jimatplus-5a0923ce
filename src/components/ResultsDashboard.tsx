@@ -23,6 +23,16 @@ const confidenceColors = {
 
 const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboardProps) => {
   const colors = statusColors[result.survivalScore];
+  const explanationText = result.survivalScore === 'Safe'
+    ? `Your current pantry and remaining RM${input.budget.toFixed(2)} budget can cover the next ${input.daysLeft} days with a comfortable margin.`
+    : result.survivalScore === 'Critical'
+      ? `Your current pantry and remaining RM${input.budget.toFixed(2)} budget are not enough to cover the next ${input.daysLeft} days reliably.`
+      : `Your current pantry and remaining RM${input.budget.toFixed(2)} budget can almost cover the next ${input.daysLeft} days, but the plan is still fragile.`;
+  const reasoningText = result.survivalScore === 'Safe'
+    ? 'Your pantry already supports several low-cost meals. Any extra purchase is optional rather than urgent.'
+    : result.survivalScore === 'Critical'
+      ? 'Your pantry has very limited coverage right now. A single low-cost purchase can help stabilize the next step, but the situation is still fragile.'
+      : 'Your pantry already supports simple rice-based meals. A low-cost protein addition improves meal variety and extends coverage more efficiently than higher-cost items.';
   const fadeUp = {
     initial: { opacity: 0, y: 8 },
     animate: { opacity: 1, y: 0 },
@@ -71,10 +81,10 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         {/* Explanation */}
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Your current pantry and remaining RM{input.budget.toFixed(2)} budget can almost cover the next {input.daysLeft} days, but the plan is still fragile.
+            {explanationText}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mt-2">
-            Your pantry already supports a few low-cost meals. One small purchase can extend your plan and reduce the risk of running out before your next allowance.
+            The app prioritizes pantry reuse first, then identifies the cheapest single item that unlocks the most additional low-cost meals.
           </p>
         </motion.div>
 
@@ -117,7 +127,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         {/* Reasoning */}
         <motion.div {...fadeUp} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-8">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Your pantry already supports a few low-cost meals. One small purchase can extend your plan and reduce the risk of running out before your next allowance.
+            {reasoningText}
           </p>
         </motion.div>
 

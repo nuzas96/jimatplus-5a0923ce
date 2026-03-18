@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Utensils, Package } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Package, Utensils } from 'lucide-react';
 import { SurvivalResult } from '@/lib/types';
 
 interface SurvivalPlanProps {
@@ -26,15 +26,14 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           <p className="text-muted-foreground mb-8">This plan prioritizes pantry reuse first and keeps spending minimal.</p>
         </motion.div>
 
-        {/* Timeline */}
         <div className="relative mb-8">
           <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-          
-          {result.meals.map((meal, idx) => (
+
+          {result.meals.map((meal, index) => (
             <motion.div
               key={meal.day}
               {...fadeUp}
-              transition={{ delay: 0.1 * (idx + 1), duration: 0.4 }}
+              transition={{ delay: 0.1 * (index + 1), duration: 0.4 }}
               className="relative pl-12 pb-6 last:pb-0"
             >
               <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-card shadow-card flex items-center justify-center border border-border">
@@ -47,9 +46,9 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
                 </div>
                 <h3 className="text-foreground font-semibold text-lg">{meal.name}</h3>
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {meal.ingredients.map(ing => (
-                    <span key={ing} className="px-2.5 py-0.5 bg-muted text-muted-foreground text-xs rounded-md">
-                      {ing}
+                  {meal.ingredients.map(ingredient => (
+                    <span key={ingredient} className="px-2.5 py-0.5 bg-muted text-muted-foreground text-xs rounded-md">
+                      {ingredient}
                     </span>
                   ))}
                 </div>
@@ -63,7 +62,6 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           ))}
         </div>
 
-        {/* Summary cards */}
         <motion.div {...fadeUp} transition={{ delay: 0.5, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-5 rounded-2xl shadow-card">
             <div className="flex items-center gap-2 mb-2">
@@ -95,7 +93,7 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
         <motion.div {...fadeUp} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-8">
           <span className="font-label text-muted-foreground block mb-1">Estimated Total Cost</span>
           <span className="font-mono text-2xl font-bold text-foreground">
-            RM{result.totalEstimatedCost.min.toFixed(2)} – RM{result.totalEstimatedCost.max.toFixed(2)}
+            RM{result.totalEstimatedCost.min.toFixed(2)} - RM{result.totalEstimatedCost.max.toFixed(2)}
           </span>
         </motion.div>
 

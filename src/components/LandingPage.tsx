@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Shield, Calendar, AlertTriangle, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Calendar, Shield, ShoppingCart } from 'lucide-react';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -34,7 +34,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </p>
 
         <p className="text-base text-muted-foreground/80 mb-10 max-w-md mx-auto italic">
-          Some students don't run out of food completely. They run out of confidence in how to make the rest of their food and money last.
+          Some students don&apos;t run out of food completely. They run out of confidence in how to make the rest of their food and money last.
         </p>
 
         <motion.button
@@ -46,7 +46,6 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           <ArrowRight className="w-5 h-5" />
         </motion.button>
 
-        {/* Value highlights */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
           {VALUE_HIGHLIGHTS.map(({ icon: Icon, text }) => (
             <div key={text} className="flex items-center gap-2 text-muted-foreground">
@@ -57,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </div>
 
         <p className="mt-8 font-label text-muted-foreground">
-          No login required · Free to use · Private
+          No login required | Free to use | Private
         </p>
       </motion.div>
     </div>

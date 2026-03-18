@@ -1,4 +1,4 @@
-export type DietaryPreference = 'no-preference' | 'vegetarian' | 'halal' | 'no-pork';
+export type DietaryPreference = 'no-preference' | 'vegetarian' | 'halal-friendly' | 'low-cost-only';
 
 export interface UserInput {
   budget: number;

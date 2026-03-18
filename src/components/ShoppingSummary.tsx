@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ShoppingCart, CheckCircle2, ArrowUpRight, List } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, ChevronLeft, List, ShoppingCart } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ShoppingSummaryProps {
@@ -23,12 +23,13 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         </button>
 
         <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-          <h2 className="font-display text-3xl text-foreground mb-2">Shopping Summary</h2>
+          <h2 className="font-display text-3xl text-foreground mb-2">Minimal Shopping Summary</h2>
           <p className="text-muted-foreground mb-8">One smart purchase to stabilize your food plan.</p>
         </motion.div>
 
-        {/* Best Next Purchase */}
-        <motion.div {...fadeUp} transition={{ delay: 0.1, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.1, duration: 0.4 }}
           className="bg-status-safe/5 border border-status-safe/20 p-6 rounded-2xl mb-4"
         >
           <div className="flex items-center gap-3 mb-3">
@@ -37,13 +38,12 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
           <h3 className="text-foreground text-2xl font-bold">{result.cheapestNextPurchase.name}</h3>
           <p className="font-mono text-lg text-foreground mt-1">RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {result.cheapestNextPurchase.reason}
-          </p>
+          <p className="text-sm text-muted-foreground mt-2">{result.cheapestNextPurchase.reason}</p>
         </motion.div>
 
-        {/* Minimal Shopping List */}
-        <motion.div {...fadeUp} transition={{ delay: 0.15, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.15, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-card mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -59,7 +59,6 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </p>
         </motion.div>
 
-        {/* Budget breakdown */}
         <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.4 }} className="bg-card rounded-2xl shadow-card mb-4 overflow-hidden">
           <div className="divide-y divide-border">
             <div className="flex items-center justify-between p-5">
@@ -68,7 +67,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             </div>
             <div className="flex items-center justify-between p-5">
               <span className="text-sm text-muted-foreground">Suggested Spend</span>
-              <span className="font-mono font-semibold text-status-tight">– RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
+              <span className="font-mono font-semibold text-status-tight">- RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between p-5 bg-muted/50">
               <span className="text-sm font-medium text-foreground">Estimated Remaining Budget</span>
@@ -77,11 +76,10 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
         </motion.div>
 
-        {/* Impact */}
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-5 rounded-2xl shadow-card">
             <span className="font-label text-muted-foreground block mb-1">Meals Unlocked</span>
-            <span className="font-mono text-2xl font-bold text-foreground">2–3</span>
+            <span className="font-mono text-2xl font-bold text-foreground">2-3</span>
           </div>
           <div className="bg-card p-5 rounded-2xl shadow-card">
             <span className="font-label text-muted-foreground block mb-1">Coverage Improved</span>
@@ -92,15 +90,14 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
         </motion.div>
 
-        {/* Final message */}
-        <motion.div {...fadeUp} transition={{ delay: 0.4, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.4, duration: 0.4 }}
           className="bg-card p-6 rounded-2xl shadow-card mb-8"
         >
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {result.finalMessage}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{result.finalMessage}</p>
           </div>
         </motion.div>
 
