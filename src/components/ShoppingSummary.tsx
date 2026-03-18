@@ -79,7 +79,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-5 rounded-2xl shadow-card">
             <span className="font-label text-muted-foreground block mb-1">Meals Unlocked</span>
-            <span className="font-mono text-2xl font-bold text-foreground">2-3</span>
+            <span className="font-mono text-2xl font-bold text-foreground">{result.cheapestNextPurchase.mealsUnlocked}</span>
           </div>
           <div className="bg-card p-5 rounded-2xl shadow-card">
             <span className="font-label text-muted-foreground block mb-1">Coverage Improved</span>
@@ -97,7 +97,9 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         >
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-muted-foreground leading-relaxed">{result.finalMessage}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {result.finalMessage} {result.recommendationExplainer.localContextNote}
+            </p>
           </div>
         </motion.div>
 

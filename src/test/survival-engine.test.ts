@@ -22,6 +22,22 @@ describe('calculateSurvival', () => {
     expect(result.cheapestNextPurchase.name).toBe('Tofu');
     expect(result.cheapestNextPurchase.estimatedCost).toBe(4.5);
     expect(result.coverageImproved).toBe('from 2.8 days to 3+ days');
+    expect(result.recommendationExplainer.coverageSummary.label).toBe('from 2.8 days to 3+ days');
+    expect(result.recommendationExplainer.pantryMealNames).toEqual([
+      'Egg Fried Rice',
+      'Instant Noodles with Egg',
+      'Onion Omelette with Rice',
+      'Plain Rice with Onion',
+    ]);
+    expect(result.recommendationExplainer.comparisonItems[0]).toMatchObject({
+      name: 'Tofu',
+      verdict: 'selected',
+      mealsUnlocked: 2,
+      coverageAfterPurchase: 3.8,
+    });
+    expect(result.recommendationExplainer.comparisonItems[1]).toMatchObject({
+      verdict: 'alternative',
+    });
     expect(result.meals.map(meal => meal.name)).toEqual([
       'Egg Fried Rice',
       'Instant Noodles with Egg',
@@ -73,5 +89,6 @@ describe('calculateSurvival', () => {
     expect(result.missingIngredients).toEqual(['tofu']);
     expect(result.cheapestNextPurchase.mealsUnlocked).toBe(1);
     expect(result.coverageImproved).toBe('from 0.5 days to 1+ days');
+    expect(result.recommendationExplainer.comparisonItems).toHaveLength(1);
   });
 });

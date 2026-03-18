@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, ShoppingBag, TrendingDown, ArrowRight, ChevronLeft } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ChevronLeft, ShoppingBag, TrendingDown } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ResultsDashboardProps {
@@ -23,16 +23,13 @@ const confidenceColors = {
 
 const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboardProps) => {
   const colors = statusColors[result.survivalScore];
+  const selectedComparison = result.recommendationExplainer.comparisonItems.find(item => item.verdict === 'selected');
+  const alternativeComparisons = result.recommendationExplainer.comparisonItems.filter(item => item.verdict === 'alternative');
   const explanationText = result.survivalScore === 'Safe'
     ? `Your current pantry and remaining RM${input.budget.toFixed(2)} budget can cover the next ${input.daysLeft} days with a comfortable margin.`
     : result.survivalScore === 'Critical'
       ? `Your current pantry and remaining RM${input.budget.toFixed(2)} budget are not enough to cover the next ${input.daysLeft} days reliably.`
       : `Your current pantry and remaining RM${input.budget.toFixed(2)} budget can almost cover the next ${input.daysLeft} days, but the plan is still fragile.`;
-  const reasoningText = result.survivalScore === 'Safe'
-    ? 'Your pantry already supports several low-cost meals. Any extra purchase is optional rather than urgent.'
-    : result.survivalScore === 'Critical'
-      ? 'Your pantry has very limited coverage right now. A single low-cost purchase can help stabilize the next step, but the situation is still fragile.'
-      : 'Your pantry already supports simple rice-based meals. A low-cost protein addition improves meal variety and extends coverage more efficiently than higher-cost items.';
   const fadeUp = {
     initial: { opacity: 0, y: 8 },
     animate: { opacity: 1, y: 0 },
@@ -84,7 +81,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             {explanationText}
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mt-2">
-            The app prioritizes pantry reuse first, then identifies the cheapest single item that unlocks the most additional low-cost meals.
+            {result.recommendationExplainer.localContextNote}
           </p>
         </motion.div>
 
@@ -120,15 +117,73 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
               <p className="text-foreground font-semibold">
                 Buy {result.cheapestNextPurchase.name.toLowerCase()} for RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.
               </p>
+              <p className="text-sm text-muted-foreground mt-2">{result.cheapestNextPurchase.reason}</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Reasoning */}
-        <motion.div {...fadeUp} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-8">
+        <motion.div {...fadeUp} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-4">
+          <span className="font-label text-foreground block mb-3">Why This Recommendation Wins</span>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {reasoningText}
+            {result.recommendationExplainer.purchaseRationale}
           </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-muted/50 p-4">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">Pantry coverage</span>
+              <p className="font-mono text-lg font-bold text-foreground mt-1">
+                {result.recommendationExplainer.coverageSummary.before} days
+              </p>
+            </div>
+            <div className="rounded-xl bg-primary/5 p-4">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">After one purchase</span>
+              <p className="font-mono text-lg font-bold text-foreground mt-1">
+                {result.recommendationExplainer.coverageSummary.after} days
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div {...fadeUp} transition={{ delay: 0.65, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-4">
+          <span className="font-label text-foreground block mb-3">Pantry Meals You Can Already Make</span>
+          {result.recommendationExplainer.pantryMealNames.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {result.recommendationExplainer.pantryMealNames.map(mealName => (
+                <span key={mealName} className="rounded-lg bg-status-safe/10 px-3 py-1.5 text-xs font-medium text-status-safe-foreground">
+                  {mealName}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No full pantry-supported meals yet, so the app prioritizes a single stabilizing purchase.</p>
+          )}
+        </motion.div>
+
+        <motion.div {...fadeUp} transition={{ delay: 0.7, duration: 0.4 }} className="bg-card p-5 rounded-2xl shadow-card mb-8">
+          <span className="font-label text-foreground block mb-3">Other Nearby Options</span>
+          <div className="space-y-3">
+            {selectedComparison && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-foreground">{selectedComparison.name}</span>
+                  <span className="font-mono text-sm text-foreground">RM{selectedComparison.estimatedCost.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selected because it unlocks {selectedComparison.mealsUnlocked} meal option{selectedComparison.mealsUnlocked === 1 ? '' : 's'} and pushes coverage to {selectedComparison.coverageAfterPurchase} days.
+                </p>
+              </div>
+            )}
+            {alternativeComparisons.map(option => (
+              <div key={option.name} className="rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-foreground">{option.name}</span>
+                  <span className="font-mono text-sm text-muted-foreground">RM{option.estimatedCost.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Rejected because it only unlocks {option.mealsUnlocked} meal option{option.mealsUnlocked === 1 ? '' : 's'} and reaches {option.coverageAfterPurchase} days. {option.reason}
+                </p>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.button

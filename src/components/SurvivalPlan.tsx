@@ -23,7 +23,8 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
 
         <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
           <h2 className="font-display text-3xl text-foreground mb-2">Your 3-Day Survival Plan</h2>
-          <p className="text-muted-foreground mb-8">This plan prioritizes pantry reuse first and keeps spending minimal.</p>
+          <p className="text-muted-foreground mb-3">This plan prioritizes pantry reuse first and keeps spending minimal.</p>
+          <p className="text-sm text-muted-foreground/80 mb-8">{result.recommendationExplainer.coverageSummary.label} after one strategic purchase.</p>
         </motion.div>
 
         <div className="relative mb-8">
@@ -95,6 +96,9 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           <span className="font-mono text-2xl font-bold text-foreground">
             RM{result.totalEstimatedCost.min.toFixed(2)} - RM{result.totalEstimatedCost.max.toFixed(2)}
           </span>
+          <p className="text-sm text-muted-foreground mt-3">
+            Pantry-first meals handle the early stretch. The extra spend is mainly for {result.cheapestNextPurchase.name.toLowerCase()} to reduce the risk of running short.
+          </p>
         </motion.div>
 
         <motion.button

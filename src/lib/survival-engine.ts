@@ -1,4 +1,13 @@
-import { ConfidenceLevel, DietaryPreference, MealSuggestion, ShoppingItem, SurvivalResult, SurvivalStatus, UserInput } from './types';
+import {
+  ConfidenceLevel,
+  DietaryPreference,
+  MealSuggestion,
+  PurchaseComparison,
+  ShoppingItem,
+  SurvivalResult,
+  SurvivalStatus,
+  UserInput,
+} from './types';
 
 interface MealTemplate {
   name: string;
@@ -9,6 +18,13 @@ interface MealTemplate {
 
 interface CandidatePurchase extends ShoppingItem {
   dietaryTags: DietaryPreference[];
+}
+
+interface PurchaseOption {
+  candidate: CandidatePurchase;
+  unlockedMeals: MealTemplate[];
+  rank: [number, number, number, number, string];
+  coverageAfterPurchase: number;
 }
 
 interface FallbackMeal {
@@ -30,35 +46,35 @@ const PURCHASE_CANDIDATES: CandidatePurchase[] = [
     name: 'Tofu',
     estimatedCost: 4.5,
     mealsUnlocked: 3,
-    reason: 'Unlocks additional low-cost meals and improves your chance of reaching Day 3 comfortably.',
+    reason: 'Unlocks additional low-cost meals and improves your chance of covering a hostel-style 3-day stretch.',
     dietaryTags: ['no-preference', 'vegetarian', 'halal-friendly', 'low-cost-only'],
   },
   {
     name: 'Bread',
     estimatedCost: 3.5,
     mealsUnlocked: 1,
-    reason: 'Adds one simple backup meal, but improves coverage less than tofu.',
+    reason: 'Adds one quick backup meal, but improves coverage less than tofu for the same 3-day allowance gap.',
     dietaryTags: ['no-preference', 'vegetarian', 'halal-friendly', 'low-cost-only'],
   },
   {
     name: 'Cabbage',
     estimatedCost: 4,
     mealsUnlocked: 1,
-    reason: 'Adds one cheap vegetable-based meal, but gives less overall coverage than tofu.',
+    reason: 'Adds one cheap vegetable-based meal, but gives less overall coverage than tofu in this student-budget scenario.',
     dietaryTags: ['no-preference', 'vegetarian', 'halal-friendly', 'low-cost-only'],
   },
   {
     name: 'Eggs',
     estimatedCost: 4,
     mealsUnlocked: 1,
-    reason: 'Adds a flexible protein option, but unlocks fewer new meals in this scenario.',
+    reason: 'Adds a flexible protein option, but unlocks fewer new meals than tofu with the current pantry.',
     dietaryTags: ['no-preference', 'vegetarian', 'halal-friendly', 'low-cost-only'],
   },
   {
     name: 'Sardines',
     estimatedCost: 6.5,
     mealsUnlocked: 1,
-    reason: 'Supports one filling meal, but costs more than lower-cost alternatives.',
+    reason: 'Supports one filling rice meal, but costs more than lower-cost alternatives near campus.',
     dietaryTags: ['no-preference', 'halal-friendly'],
   },
 ];
@@ -206,6 +222,16 @@ function toOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
+function buildCoverageLabel(before: number, after: number, targetDays: number): string {
+  if (after > before) {
+    return after >= targetDays
+      ? `from ${before} days to ${targetDays}+ days`
+      : `from ${before} days to ${after}+ days`;
+  }
+
+  return `stays at ${before} days`;
+}
+
 function buildCandidateRank(
   candidate: CandidatePurchase,
   unlockedMeals: MealTemplate[],
@@ -233,10 +259,27 @@ function compareCandidateRanks(a: [number, number, number, number, string], b: [
   return 0;
 }
 
+function buildLocalContextNote(daysLeft: number): string {
+  return `This recommendation assumes a Malaysian student trying to stretch simple pantry staples across the last ${daysLeft} day${daysLeft === 1 ? '' : 's'} before the next allowance.`;
+}
+
+function buildPurchaseComparison(
+  option: PurchaseOption,
+  verdict: 'selected' | 'alternative',
+): PurchaseComparison {
+  return {
+    name: option.candidate.name,
+    estimatedCost: option.candidate.estimatedCost,
+    mealsUnlocked: option.unlockedMeals.length,
+    coverageAfterPurchase: option.coverageAfterPurchase,
+    verdict,
+    reason: option.candidate.reason,
+  };
+}
+
 function buildThreeDayPlan(
   pantryMeals: MealTemplate[],
   unlockedMeals: MealTemplate[],
-  pantryItems: string[],
   daysLeft: number,
   cheapestNextPurchase: ShoppingItem,
 ): MealSuggestion[] {
@@ -266,7 +309,7 @@ function buildThreeDayPlan(
       day: meals.length + 1,
       name: preferredUnlockedMeal.name,
       ingredients: preferredUnlockedMeal.ingredients,
-      estimatedCost: 4.5,
+      estimatedCost: cheapestNextPurchase.estimatedCost,
     });
     usedMealNames.add(preferredUnlockedMeal.name);
   }
@@ -295,7 +338,7 @@ function buildThreeDayPlan(
       day: meals.length + 1,
       name: fallbackPurchaseMeal.name,
       ingredients: fallbackPurchaseMeal.ingredients,
-      estimatedCost: 4.5,
+      estimatedCost: cheapestNextPurchase.estimatedCost,
     });
     usedMealNames.add(fallbackPurchaseMeal.name);
   }
@@ -338,15 +381,19 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
         return missingIngredients.length === 1 && normalize(missingIngredients[0]) === normalize(candidate.name);
       });
 
+      const sortedUnlockedMeals = unlockedMeals.sort(compareMealsByName);
       return {
         candidate,
-        unlockedMeals: unlockedMeals.sort(compareMealsByName),
-        rank: buildCandidateRank(candidate, unlockedMeals, currentCoverage),
+        unlockedMeals: sortedUnlockedMeals,
+        rank: buildCandidateRank(candidate, sortedUnlockedMeals, currentCoverage),
+        coverageAfterPurchase: toOneDecimal(
+          clampCoverage(currentCoverage + sortedUnlockedMeals.length / MEALS_PER_DAY, input.daysLeft),
+        ),
       };
     })
     .filter(option => option.unlockedMeals.length > 0);
 
-  const selectedPurchase = purchaseOptions.sort((left, right) => compareCandidateRanks(right.rank, left.rank))[0];
+  const selectedPurchase = purchaseOptions.slice().sort((left, right) => compareCandidateRanks(right.rank, left.rank))[0];
   const fallbackPurchaseCandidate = PURCHASE_CANDIDATES.find(candidate =>
     normalize(candidate.name) === 'tofu' && candidate.estimatedCost <= input.budget && purchaseMatchesPreference(candidate, input.dietaryPreference),
   ) ?? PURCHASE_CANDIDATES.find(candidate =>
@@ -366,7 +413,7 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
         mealsUnlocked: hasEmptyPantry ? 1 : 3,
         reason: hasEmptyPantry
           ? 'Gives you one simple low-cost meal to stabilize the situation before your next allowance.'
-          : 'Unlocks additional low-cost meals and improves your chance of reaching Day 3 comfortably.',
+          : 'Unlocks additional low-cost meals and improves your chance of covering a hostel-style 3-day stretch.',
       };
 
   const cheapestNextPurchase: ShoppingItem = selectedPurchase?.candidate ?? fallbackPurchase;
@@ -376,11 +423,7 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     clampCoverage(currentCoverage + (unlockedMeals.length + fallbackUnlockedMeals) / MEALS_PER_DAY, input.daysLeft),
   );
   const displayedImprovedCoverage = Math.max(currentCoverage, improvedCoverage);
-  const coverageImproved = displayedImprovedCoverage > currentCoverage
-    ? displayedImprovedCoverage >= input.daysLeft
-      ? `from ${currentCoverage} days to ${input.daysLeft}+ days`
-      : `from ${currentCoverage} days to ${displayedImprovedCoverage}+ days`
-    : `stays at ${currentCoverage} days`;
+  const coverageImproved = buildCoverageLabel(currentCoverage, displayedImprovedCoverage, input.daysLeft);
 
   let survivalScore: SurvivalStatus = 'Critical';
   if (currentCoverage >= input.daysLeft + 0.3) {
@@ -396,7 +439,7 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     confidenceLevel = pantryMeals.length >= 3 && unlockedMeals.length >= 2 ? 'Medium' : 'Low';
   }
 
-  const meals = buildThreeDayPlan(pantryMeals, unlockedMeals, pantryItems, input.daysLeft, cheapestNextPurchase);
+  const meals = buildThreeDayPlan(pantryMeals, unlockedMeals, input.daysLeft, cheapestNextPurchase);
   const allIngredients = [...new Set(meals.flatMap(meal => meal.ingredients))];
   const pantryItemsUsed = allIngredients.filter(ingredient => hasPantryItem(pantryItems, ingredient));
   const missingIngredients = allIngredients.filter(ingredient => !hasPantryItem(pantryItems, ingredient));
@@ -409,6 +452,30 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     : survivalScore === 'Tight'
       ? 'Without adjustment, your current food plan may not last until your next allowance.'
       : 'Your situation looks manageable, but staying mindful of spending will help you stay on track.';
+
+  const comparisonItems = selectedPurchase
+    ? purchaseOptions
+        .slice()
+        .sort((left, right) => compareCandidateRanks(right.rank, left.rank))
+        .slice(0, 3)
+        .map(option => buildPurchaseComparison(
+          option,
+          option.candidate.name === selectedPurchase.candidate.name ? 'selected' : 'alternative',
+        ))
+    : [
+        {
+          name: cheapestNextPurchase.name,
+          estimatedCost: cheapestNextPurchase.estimatedCost,
+          mealsUnlocked: fallbackUnlockedMeals || cheapestNextPurchase.mealsUnlocked,
+          coverageAfterPurchase: displayedImprovedCoverage,
+          verdict: 'selected',
+          reason: cheapestNextPurchase.reason,
+        },
+      ];
+
+  const purchaseRationale = selectedPurchase
+    ? `${selectedPurchase.candidate.name} is the best next purchase because it unlocks ${selectedPurchase.unlockedMeals.length} extra meal option${selectedPurchase.unlockedMeals.length === 1 ? '' : 's'} and moves your coverage ${coverageImproved}.`
+    : `${cheapestNextPurchase.name} is the safest fallback because it gives you at least one workable low-cost meal without requiring a full grocery restock.`;
 
   return {
     survivalScore,
@@ -423,5 +490,18 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     budgetAfterShopping: Math.round((input.budget - cheapestNextPurchase.estimatedCost) * 100) / 100,
     coverageImproved,
     finalMessage: 'You do not need a full grocery restock. One low-cost purchase can make your current food plan more stable.',
+    recommendationExplainer: {
+      pantryMealNames: pantryMeals.map(meal => meal.name),
+      pantryMealCount: pantryMeals.length,
+      localContextNote: buildLocalContextNote(input.daysLeft),
+      purchaseRationale,
+      comparisonItems,
+      coverageSummary: {
+        before: currentCoverage,
+        after: displayedImprovedCoverage,
+        targetDays: input.daysLeft,
+        label: coverageImproved,
+      },
+    },
   };
 }

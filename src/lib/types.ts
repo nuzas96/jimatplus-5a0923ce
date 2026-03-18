@@ -24,6 +24,31 @@ export interface ShoppingItem {
   reason: string;
 }
 
+export interface PurchaseComparison {
+  name: string;
+  estimatedCost: number;
+  mealsUnlocked: number;
+  coverageAfterPurchase: number;
+  verdict: 'selected' | 'alternative';
+  reason: string;
+}
+
+export interface CoverageSummary {
+  before: number;
+  after: number;
+  targetDays: number;
+  label: string;
+}
+
+export interface RecommendationExplainer {
+  pantryMealNames: string[];
+  pantryMealCount: number;
+  localContextNote: string;
+  purchaseRationale: string;
+  comparisonItems: PurchaseComparison[];
+  coverageSummary: CoverageSummary;
+}
+
 export interface SurvivalResult {
   survivalScore: SurvivalStatus;
   confidenceLevel: ConfidenceLevel;
@@ -37,4 +62,5 @@ export interface SurvivalResult {
   budgetAfterShopping: number;
   coverageImproved: string;
   finalMessage: string;
+  recommendationExplainer: RecommendationExplainer;
 }

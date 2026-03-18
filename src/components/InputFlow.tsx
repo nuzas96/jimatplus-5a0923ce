@@ -8,7 +8,7 @@ interface InputFlowProps {
   onBack: () => void;
 }
 
-const COMMON_ITEMS = ['rice', 'eggs', 'onion', 'instant noodles', 'bread', 'sardines', 'garlic', 'soy sauce', 'oil'];
+const COMMON_ITEMS = ['rice', 'eggs', 'onion', 'instant noodles', 'bread', 'sardines', 'tofu', 'cabbage', 'soy sauce'];
 const DIETARY_OPTIONS: Array<{ value: DietaryPreference; label: string }> = [
   { value: 'no-preference', label: 'No Preference' },
   { value: 'vegetarian', label: 'Vegetarian' },
@@ -63,7 +63,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
         </button>
 
         <h2 className="font-display text-3xl text-foreground mb-2">Tell us your current food situation</h2>
-        <p className="text-muted-foreground mb-10">We&apos;ll calculate whether your food and budget can last.</p>
+        <p className="text-muted-foreground mb-10">We&apos;ll estimate whether your pantry and budget can realistically cover the last stretch before your next allowance.</p>
 
         <div className="bg-card p-6 rounded-2xl shadow-card mb-4">
           <label className="font-label text-muted-foreground mb-3 block">Remaining Budget (RM)</label>
@@ -112,7 +112,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
         <div className="bg-card p-6 rounded-2xl shadow-card mb-8">
           <label className="font-label text-muted-foreground mb-1 block">What Do You Still Have At Home?</label>
           <p className="text-sm text-muted-foreground/70 mb-4">
-            Add simple ingredients like rice, eggs, onion, instant noodles, bread, or sardines.
+            Add student-friendly staples like rice, eggs, onion, instant noodles, bread, tofu, or sardines.
           </p>
 
           <div className="flex gap-2 mb-4">

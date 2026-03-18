@@ -30,7 +30,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </h1>
 
         <p className="text-lg text-muted-foreground mb-4 max-w-lg mx-auto">
-          LastBite Score helps university students turn leftover pantry items and limited money into a practical short-term food plan.
+          LastBite Score helps university students turn leftover pantry items and limited ringgit into a practical short-term food plan.
         </p>
 
         <p className="text-base text-muted-foreground/80 mb-10 max-w-md mx-auto italic">
@@ -56,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </div>
 
         <p className="mt-8 font-label text-muted-foreground">
-          No login required | Free to use | Private
+          Built for the last days before allowance | No login required | Private
         </p>
       </motion.div>
     </div>
