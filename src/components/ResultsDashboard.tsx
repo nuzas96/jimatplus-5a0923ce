@@ -73,6 +73,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <p className="text-sm text-muted-foreground leading-relaxed">
             Your current pantry and remaining RM{input.budget.toFixed(2)} budget can almost cover the next {input.daysLeft} days, but the plan is still fragile.
           </p>
+          <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+            Your pantry already supports a few low-cost meals. One small purchase can extend your plan and reduce the risk of running out before your next allowance.
+          </p>
         </motion.div>
 
         {/* Urgency card */}
