@@ -23,6 +23,7 @@ describe('calculateSurvival', () => {
     expect(result.cheapestNextPurchase.estimatedCost).toBe(4.5);
     expect(result.coverageImproved).toBe('from 2.8 days to 3+ days');
     expect(result.recommendationExplainer.coverageSummary.label).toBe('from 2.8 days to 3+ days');
+    expect(result.recommendationExplainer.coverageSummary.afterDisplay).toBe('3+');
     expect(result.recommendationExplainer.pantryMealNames).toEqual([
       'Egg Fried Rice',
       'Instant Noodles with Egg',
@@ -88,7 +89,21 @@ describe('calculateSurvival', () => {
     expect(result.meals[0]?.name).toBe('Tofu Starter Meal');
     expect(result.missingIngredients).toEqual(['tofu']);
     expect(result.cheapestNextPurchase.mealsUnlocked).toBe(1);
-    expect(result.coverageImproved).toBe('from 0.5 days to 1+ days');
+    expect(result.daysCovered).toBe(1.3);
+    expect(result.coverageImproved).toBe('from 1.3 days to 1.8+ days');
+    expect(result.recommendationExplainer.coverageSummary.afterDisplay).toBe('1.8');
     expect(result.recommendationExplainer.comparisonItems).toHaveLength(1);
+  });
+
+  it('does not mark a high-budget long-horizon case as critical when budget can clearly cover the period', () => {
+    const result = calculateSurvival(buildInput({
+      budget: 450,
+      daysLeft: 21,
+      pantryItems: ['rice', 'tofu', 'instant noodles'],
+    }));
+
+    expect(result.daysCovered).toBeGreaterThanOrEqual(21);
+    expect(result.survivalScore).toBe('Safe');
+    expect(result.confidenceLevel).toBe('Medium');
   });
 });

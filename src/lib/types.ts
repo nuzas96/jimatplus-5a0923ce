@@ -36,6 +36,7 @@ export interface PurchaseComparison {
 export interface CoverageSummary {
   before: number;
   after: number;
+  afterDisplay: string;
   targetDays: number;
   label: string;
 }

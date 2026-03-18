@@ -153,7 +153,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             <div className="rounded-xl bg-primary/8 p-4 text-center border border-primary/15">
               <span className="text-[10px] uppercase tracking-wider text-primary font-semibold block mb-1">After</span>
               <p className="font-mono text-xl font-bold text-primary">
-                {result.recommendationExplainer.coverageSummary.after}+
+                {result.recommendationExplainer.coverageSummary.afterDisplay}
               </p>
               <span className="text-[10px] text-muted-foreground">days</span>
             </div>

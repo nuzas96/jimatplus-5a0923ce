@@ -34,11 +34,19 @@ interface FallbackMeal {
 }
 
 const MEALS_PER_DAY = 2;
-const PANTRY_BUDGET_BOOST: Array<{ minPerDay: number; boost: number }> = [
-  { minPerDay: 6, boost: 0.8 },
-  { minPerDay: 4, boost: 0.5 },
-  { minPerDay: 2, boost: 0.2 },
-  { minPerDay: 0, boost: 0 },
+const BASE_DAILY_FOOD_COST = 9.5;
+const MIN_DAILY_FOOD_COST = 5.5;
+const PANTRY_COST_REDUCTION_RULES: Array<{
+  ingredients: string[];
+  discount: number;
+  excludedPreferences?: DietaryPreference[];
+}> = [
+  { ingredients: ['rice'], discount: 1.2 },
+  { ingredients: ['eggs', 'tofu'], discount: 0.7 },
+  { ingredients: ['sardines'], discount: 0.7, excludedPreferences: ['vegetarian', 'low-cost-only'] },
+  { ingredients: ['instant noodles', 'bread'], discount: 0.3 },
+  { ingredients: ['onion', 'garlic', 'soy sauce', 'oil'], discount: 0.2 },
+  { ingredients: ['cabbage'], discount: 0.2 },
 ];
 
 const PURCHASE_CANDIDATES: CandidatePurchase[] = [
@@ -204,14 +212,43 @@ function compareMealsByName(a: MealTemplate, b: MealTemplate): number {
   return a.name.localeCompare(b.name);
 }
 
-function buildCoverageBoost(budget: number, daysLeft: number): number {
-  if (daysLeft <= 0) {
+function pantryItemsHelpPreference(
+  pantryItems: string[],
+  ingredients: string[],
+  dietaryPreference: DietaryPreference,
+): boolean {
+  if (dietaryPreference === 'vegetarian' && ingredients.includes('sardines')) {
+    return false;
+  }
+
+  if (dietaryPreference === 'low-cost-only' && ingredients.includes('sardines')) {
+    return false;
+  }
+
+  return ingredients.some(ingredient => hasPantryItem(pantryItems, ingredient));
+}
+
+function buildBudgetDrivenCoverage(
+  budget: number,
+  daysLeft: number,
+  pantryItems: string[],
+  dietaryPreference: DietaryPreference,
+): number {
+  if (budget <= 0 || daysLeft <= 0) {
     return 0;
   }
 
-  const budgetPerDay = budget / daysLeft;
-  const matchedBoost = PANTRY_BUDGET_BOOST.find(rule => budgetPerDay >= rule.minPerDay);
-  return matchedBoost ? matchedBoost.boost : 0;
+  const pantryDiscount = PANTRY_COST_REDUCTION_RULES.reduce((sum, rule) => {
+    if (rule.excludedPreferences?.includes(dietaryPreference)) {
+      return sum;
+    }
+
+    return pantryItemsHelpPreference(pantryItems, rule.ingredients, dietaryPreference)
+      ? sum + rule.discount
+      : sum;
+  }, 0);
+  const effectiveDailyCost = Math.max(MIN_DAILY_FOOD_COST, BASE_DAILY_FOOD_COST - pantryDiscount);
+  return clampCoverage(toOneDecimal(budget / effectiveDailyCost), daysLeft);
 }
 
 function clampCoverage(daysCovered: number, daysLeft: number): number {
@@ -230,6 +267,10 @@ function buildCoverageLabel(before: number, after: number, targetDays: number): 
   }
 
   return `stays at ${before} days`;
+}
+
+function buildAfterCoverageDisplay(after: number, targetDays: number): string {
+  return after >= targetDays ? `${targetDays}+` : `${after}`;
 }
 
 function buildCandidateRank(
@@ -366,8 +407,13 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     .sort(compareMealsByName);
 
   const pantryCoverage = pantryMeals.length / MEALS_PER_DAY;
-  const budgetBoost = buildCoverageBoost(input.budget, input.daysLeft);
-  const currentCoverage = toOneDecimal(clampCoverage(pantryCoverage + budgetBoost, input.daysLeft));
+  const budgetDrivenCoverage = buildBudgetDrivenCoverage(
+    input.budget,
+    input.daysLeft,
+    pantryItems,
+    input.dietaryPreference,
+  );
+  const currentCoverage = toOneDecimal(Math.max(clampCoverage(pantryCoverage, input.daysLeft), budgetDrivenCoverage));
 
   const purchaseOptions = PURCHASE_CANDIDATES
     .filter(candidate => candidate.estimatedCost <= input.budget && purchaseMatchesPreference(candidate, input.dietaryPreference))
@@ -499,6 +545,7 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
       coverageSummary: {
         before: currentCoverage,
         after: displayedImprovedCoverage,
+        afterDisplay: buildAfterCoverageDisplay(displayedImprovedCoverage, input.daysLeft),
         targetDays: input.daysLeft,
         label: coverageImproved,
       },

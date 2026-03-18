@@ -15,6 +15,7 @@ const fadeUp = {
 };
 
 const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryProps) => {
+  const selectedComparison = result.recommendationExplainer.comparisonItems.find(item => item.verdict === 'selected');
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
       <div className="max-w-lg w-full">
@@ -84,7 +85,9 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
             <span className="font-label text-muted-foreground block mb-2">Meals Unlocked</span>
-            <span className="font-mono text-2xl font-bold text-foreground">{result.cheapestNextPurchase.mealsUnlocked}</span>
+            <span className="font-mono text-2xl font-bold text-foreground">
+              {selectedComparison?.mealsUnlocked ?? result.cheapestNextPurchase.mealsUnlocked}
+            </span>
           </div>
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
             <span className="font-label text-muted-foreground block mb-2">Coverage</span>
