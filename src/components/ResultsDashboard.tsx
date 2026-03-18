@@ -105,9 +105,8 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             <div>
               <span className="font-label text-foreground block mb-1">Cheapest Next Purchase</span>
               <p className="text-foreground font-semibold">
-                Buy {result.cheapestNextPurchase.name} for RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}
+                Buy {result.cheapestNextPurchase.name.toLowerCase()} for RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.
               </p>
-              <p className="text-sm text-muted-foreground mt-1">{result.cheapestNextPurchase.reason}</p>
             </div>
           </div>
         </motion.div>
