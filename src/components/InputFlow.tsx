@@ -136,13 +136,13 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
 
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="visible">
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-2">
-            Tell us what you&apos;re working with
+            Tell us your current food situation
           </h2>
           <p className="text-muted-foreground text-sm mb-2">
-            We&apos;ll estimate how far your food and budget can stretch.
+            JiMAT+ will estimate how far your pantry and budget can stretch before your next allowance.
           </p>
           <p className="text-xs text-muted-foreground/70 mb-8">
-            This tool uses pantry items, rough serving assumptions, and budget stretch. Add quantities when you can for a more believable estimate.
+            This is a practical student estimate, not exact inventory tracking. Add quantities when you can for a more believable result.
           </p>
         </motion.div>
 
@@ -157,7 +157,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Wallet className="w-3.5 h-3.5 text-primary" />
             </div>
-            <label className="font-label text-muted-foreground">Remaining Budget</label>
+            <label className="font-label text-muted-foreground">Remaining Budget (RM)</label>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground font-mono text-base">RM</span>
@@ -183,7 +183,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
               <Clock className="w-3.5 h-3.5 text-accent" />
             </div>
-            <label className="font-label text-muted-foreground">Days Until Next Allowance</label>
+            <label className="font-label text-muted-foreground">Days Left Until Next Allowance</label>
           </div>
           <input
             type="number"
@@ -237,7 +237,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             <div className="w-7 h-7 rounded-lg bg-status-tight/10 flex items-center justify-center">
               <Package className="w-3.5 h-3.5 text-status-tight" />
             </div>
-            <label className="font-label text-muted-foreground">What&apos;s In Your Pantry?</label>
+            <label className="font-label text-muted-foreground">What Do You Still Have At Home?</label>
           </div>
           <p className="text-xs text-muted-foreground/60 mb-2 ml-9">
             Tap items to add them, then adjust quantity.
@@ -340,7 +340,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
 
           {pantryEntries.length === 0 && (
             <p className="text-xs text-muted-foreground/50 italic text-center py-2">
-              No items added yet - that&apos;s okay, we can still estimate from budget only
+              No items added yet - that&apos;s okay, JiMAT+ can still estimate from budget only
             </p>
           )}
         </motion.div>
@@ -356,7 +356,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           disabled={!isValid}
           className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
         >
-          Analyze My Situation
+          Generate My JiMAT+ Plan
           <ArrowRight className="w-5 h-5" />
         </motion.button>
       </motion.div>

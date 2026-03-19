@@ -6,9 +6,9 @@ interface LandingPageProps {
 }
 
 const VALUE_HIGHLIGHTS = [
-  { icon: Calendar, text: 'Know how many days your food can cover', delay: 0.4 },
-  { icon: AlertTriangle, text: 'See what happens if you do nothing', delay: 0.5 },
-  { icon: ShoppingCart, text: 'Find the cheapest next item to buy', delay: 0.6 },
+  { icon: Calendar, text: 'Estimate how many days your food can still cover', delay: 0.4 },
+  { icon: AlertTriangle, text: 'See the risk before your budget runs out', delay: 0.5 },
+  { icon: ShoppingCart, text: 'Get the cheapest next purchase to stabilize the plan', delay: 0.6 },
 ];
 
 const LandingPage = ({ onStart }: LandingPageProps) => {
@@ -20,16 +20,24 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="max-w-xl w-full text-center"
       >
-        {/* Logo mark */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/8 border border-primary/15 mb-8"
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/8 border border-primary/15 mb-4"
         >
           <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary tracking-wide">LastBite Score</span>
+          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+</span>
         </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          className="text-xs sm:text-sm uppercase tracking-[0.24em] text-muted-foreground/75 mb-4"
+        >
+          Student Food Budget Survival Planner
+        </motion.p>
 
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
@@ -39,7 +47,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           style={{ textWrap: 'balance' }}
         >
           Can your food and budget
-          <span className="text-primary"> realistically last?</span>
+          <span className="text-primary"> really last until allowance day?</span>
         </motion.h1>
 
         <motion.p
@@ -48,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
         >
-          Turn leftover pantry items and limited ringgit into a practical plan for the last stretch before your next allowance.
+          JiMAT+ helps students turn leftover pantry items and limited ringgit into a practical survival plan for the last stretch before the next allowance.
         </motion.p>
 
         <motion.p
@@ -57,7 +65,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-sm text-muted-foreground/70 mb-10 max-w-sm mx-auto italic"
         >
-          You haven&apos;t run out yet. Let&apos;s make sure you don&apos;t.
+          You have not run out yet. JiMAT+ helps you make the next move before things become critical.
         </motion.p>
 
         <motion.button
@@ -69,7 +77,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           onClick={onStart}
           className="inline-flex items-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
         >
-          Check My Food Situation
+          Start My JiMAT+ Check
           <ArrowRight className="w-5 h-5" />
         </motion.button>
 
@@ -96,7 +104,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ delay: 0.7, duration: 0.4 }}
           className="mt-10 text-xs text-muted-foreground/50 font-medium tracking-wide"
         >
-          No login · Private · Built for students
+          No login | Private | Built for students
         </motion.p>
       </motion.div>
     </div>

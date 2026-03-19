@@ -47,8 +47,8 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         </motion.button>
 
         <motion.div {...fadeUp} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your Results</h2>
-          <p className="text-sm text-muted-foreground mb-6">Here&apos;s what we found based on your current situation.</p>
+          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Results</h2>
+          <p className="text-sm text-muted-foreground mb-6">Here&apos;s the fastest read on your current food situation.</p>
         </motion.div>
 
         <motion.div
@@ -230,7 +230,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
                     <span className="font-mono text-xs text-muted-foreground">RM{option.estimatedCost.toFixed(2)}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {option.mealsUnlocked} meal{option.mealsUnlocked === 1 ? '' : 's'} · {option.coverageAfterPurchaseDisplay} days
+                    {option.mealsUnlocked} meal{option.mealsUnlocked === 1 ? '' : 's'} | {option.coverageAfterPurchaseDisplay} days
                   </p>
                 </div>
               ))}
@@ -247,7 +247,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           onClick={onViewPlan}
           className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
         >
-          View My 3-Day Plan
+          View My Survival Plan
           <ArrowRight className="w-5 h-5" />
         </motion.button>
       </div>
