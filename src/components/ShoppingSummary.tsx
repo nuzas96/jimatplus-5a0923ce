@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowUpRight, CheckCircle2, ChevronLeft, ShoppingCart, Wallet, Heart, RotateCcw } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, Heart, Info, RotateCcw, ShoppingCart, Wallet } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ShoppingSummaryProps {
@@ -16,6 +16,8 @@ const fadeUp = {
 
 const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryProps) => {
   const selectedComparison = result.recommendationExplainer.comparisonItems.find(item => item.verdict === 'selected');
+  const coverageChanged = result.recommendationExplainer.coverageSummary.afterDisplay !== result.recommendationExplainer.coverageSummary.beforeDisplay;
+
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
       <div className="max-w-lg w-full">
@@ -30,10 +32,24 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
 
         <motion.div {...fadeUp} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Shopping Summary</h2>
-          <p className="text-sm text-muted-foreground mb-8">One smart purchase to stabilize your plan.</p>
+          <p className="text-sm text-muted-foreground mb-8">One smart move to stabilize your plan.</p>
         </motion.div>
 
-        {/* Best purchase card */}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.08, duration: 0.4 }}
+          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Info className="w-4 h-4 text-primary" />
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This recommendation is optimized for survival coverage and affordability, not full nutrition planning or exact household inventory.
+            </p>
+          </div>
+        </motion.div>
+
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.1, duration: 0.45 }}
@@ -46,17 +62,20 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
                 <ShoppingCart className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <span className="font-label text-primary">Best Next Purchase</span>
+                <span className="font-label text-primary">Best Next Step</span>
               </div>
             </div>
             <h3 className="text-foreground text-2xl font-bold">{result.cheapestNextPurchase.name}</h3>
-            <p className="font-mono text-lg text-primary font-semibold mt-1">RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</p>
+            <p className="font-mono text-lg text-primary font-semibold mt-1">
+              RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}
+            </p>
             <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
           </div>
         </motion.div>
 
-        {/* Budget breakdown */}
-        <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.2, duration: 0.4 }}
           className="bg-card rounded-2xl shadow-card border border-border/50 mb-4 overflow-hidden"
         >
           <div className="p-4 border-b border-border/50">
@@ -72,7 +91,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             </div>
             <div className="flex items-center justify-between p-4">
               <span className="text-sm text-muted-foreground">Suggested Spend</span>
-              <span className="font-mono font-semibold text-status-tight">− RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
+              <span className="font-mono font-semibold text-status-tight">- RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between p-4 bg-status-safe/5">
               <span className="text-sm font-semibold text-foreground">Remaining Budget</span>
@@ -81,7 +100,6 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
         </motion.div>
 
-        {/* Impact stats */}
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
             <span className="font-label text-muted-foreground block mb-2">Meals Unlocked</span>
@@ -92,13 +110,14 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
             <span className="font-label text-muted-foreground block mb-2">Coverage</span>
             <div className="flex items-center justify-center gap-1">
-              <ArrowUpRight className="w-4 h-4 text-status-safe" />
-              <span className="text-sm font-semibold text-status-safe-foreground">{result.coverageImproved}</span>
+              <ArrowUpRight className={`w-4 h-4 ${coverageChanged ? 'text-status-safe' : 'text-muted-foreground'}`} />
+              <span className={`text-sm font-semibold ${coverageChanged ? 'text-status-safe-foreground' : 'text-muted-foreground'}`}>
+                {result.coverageImproved}
+              </span>
             </div>
           </div>
         </motion.div>
 
-        {/* Final reassurance */}
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.4, duration: 0.4 }}
@@ -109,7 +128,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
               <Heart className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-foreground font-medium mb-1.5">You&apos;ve got this</p>
+              <p className="text-sm text-foreground font-medium mb-1.5">Next move</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {result.finalMessage}
               </p>
@@ -117,7 +136,6 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
         </motion.div>
 
-        {/* CTA */}
         <motion.button
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}

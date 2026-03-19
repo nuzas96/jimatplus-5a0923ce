@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, ArrowRight, ChevronLeft, ShoppingBag, TrendingDown, Zap, BarChart3, ChefHat, Scale } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, ChefHat, ChevronLeft, Info, Scale, ShoppingBag, TrendingDown, Zap } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ResultsDashboardProps {
@@ -10,9 +10,9 @@ interface ResultsDashboardProps {
 }
 
 const statusConfig = {
-  Safe: { bg: 'bg-status-safe/10', text: 'text-status-safe', border: 'border-status-safe', ring: 'ring-status-safe/20', emoji: '✅' },
-  Tight: { bg: 'bg-status-tight/10', text: 'text-status-tight', border: 'border-status-tight', ring: 'ring-status-tight/20', emoji: '⚠️' },
-  Critical: { bg: 'bg-status-critical/10', text: 'text-status-critical', border: 'border-status-critical', ring: 'ring-status-critical/20', emoji: '🚨' },
+  Safe: { bg: 'bg-status-safe/10', text: 'text-status-safe', border: 'border-status-safe', badge: 'Safe' },
+  Tight: { bg: 'bg-status-tight/10', text: 'text-status-tight', border: 'border-status-tight', badge: 'Tight' },
+  Critical: { bg: 'bg-status-critical/10', text: 'text-status-critical', border: 'border-status-critical', badge: 'Critical' },
 };
 
 const confidenceColors = {
@@ -51,7 +51,6 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <p className="text-sm text-muted-foreground mb-6">Here&apos;s what we found based on your current situation.</p>
         </motion.div>
 
-        {/* Hero metric card */}
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -61,20 +60,37 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative flex items-center gap-6">
             <div className={`w-24 h-24 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
-              <div className="font-mono text-3xl font-bold text-foreground">{result.daysCovered}</div>
+              <div className="font-mono text-3xl font-bold text-foreground">{result.daysCoveredDisplay}</div>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">days</span>
             </div>
             <div className="flex-1 min-w-0">
               <span className="font-label text-muted-foreground block mb-1.5">Estimated Days Covered</span>
               <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${config.bg} ${config.text} text-xs font-bold uppercase tracking-wide`}>
-                {config.emoji} {result.survivalScore}
+                {config.badge}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{explanationText}</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick stats */}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.16, duration: 0.4 }}
+          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Info className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">How this estimate works</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                This is a survival estimate, not exact inventory tracking. It combines your pantry items, rough serving assumptions, and remaining budget. Adding quantities like `3 eggs` improves accuracy.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50">
             <div className="flex items-center gap-2 mb-2">
@@ -92,8 +108,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </div>
         </motion.div>
 
-        {/* Urgency */}
-        <motion.div {...fadeUp} transition={{ delay: 0.25, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.25, duration: 0.4 }}
           className={`p-4 rounded-2xl mb-4 border ${
             result.survivalScore === 'Critical' ? 'bg-status-critical/5 border-status-critical/20' :
             result.survivalScore === 'Tight' ? 'bg-status-tight/5 border-status-tight/20' :
@@ -113,8 +130,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </div>
         </motion.div>
 
-        {/* Best next purchase */}
-        <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.3, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-elevated border border-primary/15 mb-4"
         >
           <div className="flex items-start gap-3">
@@ -122,17 +140,22 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
               <ShoppingBag className="w-4 h-4 text-primary-foreground" />
             </div>
             <div className="flex-1">
-              <span className="font-label text-primary block mb-1">Best Next Purchase</span>
+              <span className="font-label text-primary block mb-1">
+                {result.cheapestNextPurchase.estimatedCost > 0 ? 'Best Next Purchase' : 'Best Next Step'}
+              </span>
               <p className="text-foreground font-semibold text-sm">
-                Buy {result.cheapestNextPurchase.name.toLowerCase()} for RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.
+                {result.cheapestNextPurchase.estimatedCost > 0
+                  ? `Buy ${result.cheapestNextPurchase.name.toLowerCase()} for RM${result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.`
+                  : 'Do not spend your remaining budget yet. Stretch what you have first and seek support if the gap becomes unsafe.'}
               </p>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Before / After */}
-        <motion.div {...fadeUp} transition={{ delay: 0.35, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.35, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -146,7 +169,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             <div className="rounded-xl bg-muted/50 p-4 text-center border border-border/30">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1">Before</span>
               <p className="font-mono text-xl font-bold text-foreground">
-                {result.recommendationExplainer.coverageSummary.before}
+                {result.recommendationExplainer.coverageSummary.beforeDisplay}
               </p>
               <span className="text-[10px] text-muted-foreground">days</span>
             </div>
@@ -160,8 +183,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </div>
         </motion.div>
 
-        {/* Pantry meals */}
-        <motion.div {...fadeUp} transition={{ delay: 0.4, duration: 0.4 }}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.4, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -177,19 +201,21 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">No full pantry meals yet — one purchase can change that.</p>
+            <p className="text-xs text-muted-foreground italic">No full pantry meals yet - one purchase can change that.</p>
           )}
         </motion.div>
 
-        {/* Other options */}
         {result.recommendationExplainer.comparisonItems.length > 1 && (
-          <motion.div {...fadeUp} transition={{ delay: 0.45, duration: 0.4 }}
+          <motion.div
+            {...fadeUp}
+            transition={{ delay: 0.45, duration: 0.4 }}
             className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-8"
           >
             <span className="font-label text-foreground block mb-3">Other Options Considered</span>
             <div className="space-y-2">
               {result.recommendationExplainer.comparisonItems.map(option => (
-                <div key={option.name}
+                <div
+                  key={option.name}
                   className={`rounded-xl p-3 border ${
                     option.verdict === 'selected'
                       ? 'border-primary/20 bg-primary/5'
@@ -204,7 +230,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
                     <span className="font-mono text-xs text-muted-foreground">RM{option.estimatedCost.toFixed(2)}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {option.mealsUnlocked} meal{option.mealsUnlocked === 1 ? '' : 's'} · {option.coverageAfterPurchase} days
+                    {option.mealsUnlocked} meal{option.mealsUnlocked === 1 ? '' : 's'} · {option.coverageAfterPurchaseDisplay} days
                   </p>
                 </div>
               ))}
@@ -212,7 +238,6 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </motion.div>
         )}
 
-        {/* CTA */}
         <motion.button
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}

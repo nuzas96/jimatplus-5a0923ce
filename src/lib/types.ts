@@ -29,12 +29,14 @@ export interface PurchaseComparison {
   estimatedCost: number;
   mealsUnlocked: number;
   coverageAfterPurchase: number;
+  coverageAfterPurchaseDisplay: string;
   verdict: 'selected' | 'alternative';
   reason: string;
 }
 
 export interface CoverageSummary {
   before: number;
+  beforeDisplay: string;
   after: number;
   afterDisplay: string;
   targetDays: number;
@@ -54,6 +56,7 @@ export interface SurvivalResult {
   survivalScore: SurvivalStatus;
   confidenceLevel: ConfidenceLevel;
   daysCovered: number;
+  daysCoveredDisplay: string;
   urgencyWarning: string;
   cheapestNextPurchase: ShoppingItem;
   meals: MealSuggestion[];

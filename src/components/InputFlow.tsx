@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Plus, X, ChevronLeft, Wallet, Clock, Leaf, Package } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, ChevronLeft, Clock, Leaf, Minus, Package, Plus, Wallet, X } from 'lucide-react';
 import { DietaryPreference, UserInput } from '@/lib/types';
 
 interface InputFlowProps {
@@ -10,10 +10,10 @@ interface InputFlowProps {
 
 const COMMON_ITEMS = ['rice', 'eggs', 'onion', 'instant noodles', 'bread', 'sardines', 'tofu', 'cabbage', 'soy sauce'];
 const DIETARY_OPTIONS: Array<{ value: DietaryPreference; label: string; emoji: string }> = [
-  { value: 'no-preference', label: 'No Preference', emoji: '🍽️' },
-  { value: 'vegetarian', label: 'Vegetarian', emoji: '🥬' },
-  { value: 'halal-friendly', label: 'Halal-Friendly', emoji: '🌙' },
-  { value: 'low-cost-only', label: 'Low-Cost Only', emoji: '💰' },
+  { value: 'no-preference', label: 'No Preference', emoji: 'No pref' },
+  { value: 'vegetarian', label: 'Vegetarian', emoji: 'Veg' },
+  { value: 'halal-friendly', label: 'Halal-Friendly', emoji: 'Halal' },
+  { value: 'low-cost-only', label: 'Low-Cost Only', emoji: 'Budget' },
 ];
 
 const sectionVariants = {
@@ -25,36 +25,96 @@ const sectionVariants = {
   }),
 };
 
+function normalizeItemLabel(item: string): string {
+  return item.trim().toLowerCase();
+}
+
+function buildPantryPayload(pantryCounts: Record<string, number>): string[] {
+  return Object.entries(pantryCounts)
+    .filter(([, quantity]) => quantity > 0)
+    .map(([item, quantity]) => (quantity > 1 ? `${quantity} ${item}` : item));
+}
+
 const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
   const [budget, setBudget] = useState('');
   const [daysLeft, setDaysLeft] = useState('');
   const [dietary, setDietary] = useState<DietaryPreference>('no-preference');
-  const [pantryItems, setPantryItems] = useState<string[]>([]);
+  const [pantryCounts, setPantryCounts] = useState<Record<string, number>>({});
   const [currentItem, setCurrentItem] = useState('');
 
-  const addItem = (item: string) => {
-    const trimmed = item.trim().toLowerCase();
-    if (trimmed && !pantryItems.includes(trimmed)) {
-      setPantryItems([...pantryItems, trimmed]);
+  const setItemQuantity = (item: string, nextQuantity: number) => {
+    const normalizedItem = normalizeItemLabel(item);
+    if (!normalizedItem) {
+      return;
     }
-    setCurrentItem('');
-  };
 
-  const removeItem = (item: string) => {
-    setPantryItems(pantryItems.filter(existingItem => existingItem !== item));
-  };
+    setPantryCounts(previous => {
+      if (nextQuantity <= 0) {
+        const { [normalizedItem]: _removed, ...remaining } = previous;
+        return remaining;
+      }
 
-  const handleSubmit = () => {
-    if (!budget || !daysLeft) return;
-    onSubmit({
-      budget: parseFloat(budget),
-      daysLeft: parseInt(daysLeft, 10),
-      dietaryPreference: dietary,
-      pantryItems,
+      return {
+        ...previous,
+        [normalizedItem]: nextQuantity,
+      };
     });
   };
 
-  const isValid = budget && parseFloat(budget) > 0 && daysLeft && parseInt(daysLeft, 10) > 0;
+  const incrementItem = (item: string) => {
+    const normalizedItem = normalizeItemLabel(item);
+    if (!normalizedItem) {
+      return;
+    }
+
+    setPantryCounts(previous => ({
+      ...previous,
+      [normalizedItem]: Math.min((previous[normalizedItem] ?? 0) + 1, 9),
+    }));
+  };
+
+  const decrementItem = (item: string) => {
+    const currentQuantity = pantryCounts[normalizeItemLabel(item)] ?? 0;
+    setItemQuantity(item, currentQuantity - 1);
+  };
+
+  const addCustomItem = () => {
+    const normalizedItem = normalizeItemLabel(currentItem);
+    if (!normalizedItem) {
+      return;
+    }
+
+    incrementItem(normalizedItem);
+    setCurrentItem('');
+  };
+
+  const handleSubmit = () => {
+    const parsedBudget = Number(budget);
+    const parsedDaysLeft = Number(daysLeft);
+
+    if (budget === '' || daysLeft === '' || Number.isNaN(parsedBudget) || Number.isNaN(parsedDaysLeft) || parsedBudget < 0 || parsedDaysLeft <= 0) {
+      return;
+    }
+
+    onSubmit({
+      budget: parsedBudget,
+      daysLeft: parsedDaysLeft,
+      dietaryPreference: dietary,
+      pantryItems: buildPantryPayload(pantryCounts),
+    });
+  };
+
+  const pantryEntries = Object.entries(pantryCounts)
+    .filter(([, quantity]) => quantity > 0)
+    .sort(([left], [right]) => left.localeCompare(right));
+  const parsedBudget = Number(budget);
+  const parsedDaysLeft = Number(daysLeft);
+  const isValid = budget !== ''
+    && daysLeft !== ''
+    && !Number.isNaN(parsedBudget)
+    && !Number.isNaN(parsedDaysLeft)
+    && parsedBudget >= 0
+    && parsedDaysLeft > 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
@@ -78,13 +138,19 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-2">
             Tell us what you&apos;re working with
           </h2>
-          <p className="text-muted-foreground text-sm mb-8">
-            We&apos;ll figure out how far your food and budget can stretch.
+          <p className="text-muted-foreground text-sm mb-2">
+            We&apos;ll estimate how far your food and budget can stretch.
+          </p>
+          <p className="text-xs text-muted-foreground/70 mb-8">
+            This tool uses pantry items, rough serving assumptions, and budget stretch. Add quantities when you can for a more believable estimate.
           </p>
         </motion.div>
 
-        {/* Budget */}
-        <motion.div custom={1} variants={sectionVariants} initial="hidden" animate="visible"
+        <motion.div
+          custom={1}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -106,8 +172,11 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           <p className="text-xs text-muted-foreground/60 mt-2">How much money do you have left for food?</p>
         </motion.div>
 
-        {/* Days Left */}
-        <motion.div custom={2} variants={sectionVariants} initial="hidden" animate="visible"
+        <motion.div
+          custom={2}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -126,8 +195,11 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           <p className="text-xs text-muted-foreground/60 mt-2">How many days do you need to get through?</p>
         </motion.div>
 
-        {/* Dietary */}
-        <motion.div custom={3} variants={sectionVariants} initial="hidden" animate="visible"
+        <motion.div
+          custom={3}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -141,21 +213,24 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
               <button
                 key={option.value}
                 onClick={() => setDietary(option.value)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
+                className={`flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
                   dietary === option.value
                     ? 'bg-primary/10 text-primary border-primary/25 shadow-sm'
                     : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:border-border/50'
                 }`}
               >
-                <span className="text-base">{option.emoji}</span>
-                {option.label}
+                <span>{option.label}</span>
+                <span className="text-[11px] uppercase tracking-wide">{option.emoji}</span>
               </button>
             ))}
           </div>
         </motion.div>
 
-        {/* Pantry Items */}
-        <motion.div custom={4} variants={sectionVariants} initial="hidden" animate="visible"
+        <motion.div
+          custom={4}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="bg-card p-5 rounded-2xl shadow-card mb-8 border border-border/50"
         >
           <div className="flex items-center gap-2 mb-1">
@@ -164,79 +239,112 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             </div>
             <label className="font-label text-muted-foreground">What&apos;s In Your Pantry?</label>
           </div>
+          <p className="text-xs text-muted-foreground/60 mb-2 ml-9">
+            Tap items to add them, then adjust quantity.
+          </p>
           <p className="text-xs text-muted-foreground/60 mb-4 ml-9">
-            Tap common items below or type your own.
+            Counts like `3 eggs` improve the estimate. If you only list an item once, the app assumes a small student-sized amount.
           </p>
 
-          {/* Quick-add chips */}
           <div className="flex flex-wrap gap-1.5 mb-4">
-            {COMMON_ITEMS.filter(item => !pantryItems.includes(item)).map(item => (
-              <motion.button
-                key={item}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => addItem(item)}
-                className="px-3 py-1.5 bg-muted/60 text-muted-foreground text-xs rounded-lg hover:bg-muted transition-colors border border-border/30 font-medium"
-              >
-                + {item}
-              </motion.button>
-            ))}
+            {COMMON_ITEMS.map(item => {
+              const quantity = pantryCounts[item] ?? 0;
+
+              return (
+                <motion.button
+                  key={item}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => incrementItem(item)}
+                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors border font-medium ${
+                    quantity > 0
+                      ? 'bg-primary/10 text-primary border-primary/20'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-muted border-border/30'
+                  }`}
+                >
+                  {quantity > 0 ? `${item} x${quantity}` : `+ ${item}`}
+                </motion.button>
+              );
+            })}
           </div>
 
-          {/* Custom input */}
           <div className="flex gap-2 mb-4">
             <input
               type="text"
               value={currentItem}
               onChange={event => setCurrentItem(event.target.value)}
-              onKeyDown={event => event.key === 'Enter' && addItem(currentItem)}
-              placeholder="Or type something else..."
+              onKeyDown={event => event.key === 'Enter' && addCustomItem()}
+              placeholder="Add custom item, e.g. bananas"
               className="flex-1 bg-muted/40 rounded-xl px-4 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border/30"
             />
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => addItem(currentItem)}
+              onClick={addCustomItem}
               className="gradient-warm text-primary-foreground p-2.5 rounded-xl shadow-sm transition-opacity hover:opacity-90"
             >
               <Plus className="w-4 h-4" />
             </motion.button>
           </div>
 
-          {/* Selected items */}
           <AnimatePresence>
-            {pantryItems.length > 0 && (
+            {pantryEntries.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="flex flex-wrap gap-2"
+                className="space-y-2"
               >
-                {pantryItems.map(item => (
-                  <motion.span
+                {pantryEntries.map(([item, quantity]) => (
+                  <motion.div
                     key={item}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-xl border border-primary/15"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="flex items-center justify-between gap-3 px-3 py-2.5 bg-primary/5 border border-primary/10 rounded-xl"
                   >
-                    {item}
-                    <button onClick={() => removeItem(item)} className="hover:text-destructive transition-colors">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </motion.span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground capitalize">{item}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Submitted as {quantity > 1 ? `${quantity} ${item}` : item}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => decrementItem(item)}
+                        className="w-8 h-8 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
+                        aria-label={`Decrease ${item}`}
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="font-mono text-sm font-semibold text-foreground min-w-5 text-center">{quantity}</span>
+                      <button
+                        onClick={() => incrementItem(item)}
+                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 transition-colors flex items-center justify-center"
+                        aria-label={`Increase ${item}`}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setItemQuantity(item, 0)}
+                        className="w-8 h-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors flex items-center justify-center"
+                        aria-label={`Remove ${item}`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </motion.div>
                 ))}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {pantryItems.length === 0 && (
+          {pantryEntries.length === 0 && (
             <p className="text-xs text-muted-foreground/50 italic text-center py-2">
-              No items added yet — that&apos;s okay, we can still help
+              No items added yet - that&apos;s okay, we can still estimate from budget only
             </p>
           )}
         </motion.div>
 
-        {/* Submit */}
         <motion.button
           custom={5}
           variants={sectionVariants}

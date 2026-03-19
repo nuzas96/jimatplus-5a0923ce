@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Package, Utensils, AlertCircle, Receipt } from 'lucide-react';
+import { AlertCircle, ArrowRight, ChevronLeft, Info, Package, Receipt, Utensils } from 'lucide-react';
 import { SurvivalResult } from '@/lib/types';
 
 interface SurvivalPlanProps {
@@ -34,12 +34,27 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
         >
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your 3-Day Plan</h2>
           <p className="text-sm text-muted-foreground mb-2">Pantry-first meals, minimal spending.</p>
-          <p className="text-xs text-muted-foreground/70 mb-8">
+          <p className="text-xs text-muted-foreground/70 mb-4">
             {result.recommendationExplainer.coverageSummary.label} after one strategic purchase.
           </p>
         </motion.div>
 
-        {/* Meal timeline */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.4 }}
+          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-6"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Info className="w-4 h-4 text-primary" />
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This plan is a practical estimate, not exact meal prep tracking. It prioritizes pantry use first, then applies one strategic purchase once across the plan.
+            </p>
+          </div>
+        </motion.div>
+
         <div className="space-y-3 mb-6">
           {result.meals.map((meal, index) => (
             <motion.div
@@ -59,12 +74,11 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
                       <span className="font-label text-muted-foreground">Day {meal.day}</span>
                     </div>
                   </div>
-                  {meal.estimatedCost > 0 && (
+                  {meal.estimatedCost > 0 ? (
                     <span className="font-mono text-xs text-accent font-semibold bg-accent/10 px-2 py-1 rounded-lg">
                       +RM{meal.estimatedCost.toFixed(2)}
                     </span>
-                  )}
-                  {meal.estimatedCost === 0 && (
+                  ) : (
                     <span className="text-xs text-status-safe font-semibold bg-status-safe/10 px-2 py-1 rounded-lg">
                       Pantry only
                     </span>
@@ -88,7 +102,6 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           ))}
         </div>
 
-        {/* Pantry used vs missing */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,7 +138,6 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           </div>
         </motion.div>
 
-        {/* Cost summary */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,10 +149,10 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
             <span className="font-label text-muted-foreground">Estimated Total Cost</span>
           </div>
           <span className="font-mono text-2xl font-bold text-foreground">
-            RM{result.totalEstimatedCost.min.toFixed(2)} – RM{result.totalEstimatedCost.max.toFixed(2)}
+            RM{result.totalEstimatedCost.min.toFixed(2)} - RM{result.totalEstimatedCost.max.toFixed(2)}
           </span>
           <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-            Pantry meals cover the early stretch. Extra spend is mainly for {result.cheapestNextPurchase.name.toLowerCase()} to avoid running short.
+            This estimate assumes your recommended purchase is paid for once, then reused across the plan where relevant.
           </p>
         </motion.div>
 

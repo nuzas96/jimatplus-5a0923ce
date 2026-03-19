@@ -23,7 +23,7 @@ interface CandidatePurchase extends ShoppingItem {
 interface PurchaseOption {
   candidate: CandidatePurchase;
   unlockedMeals: MealTemplate[];
-  rank: [number, number, number, number, string];
+  rank: [number, number, number, string];
   coverageAfterPurchase: number;
 }
 
@@ -31,6 +31,13 @@ interface FallbackMeal {
   name: string;
   ingredients: string[];
   estimatedCost: number;
+}
+
+interface PantryServingProfile {
+  servings: number;
+  isStaple?: boolean;
+  isProtein?: boolean;
+  isFlavoring?: boolean;
 }
 
 const MEALS_PER_DAY = 2;
@@ -115,6 +122,13 @@ const EMPTY_PANTRY_FALLBACKS: Record<string, FallbackMeal> = {
   },
 };
 
+const NO_AFFORDABLE_PURCHASE: ShoppingItem = {
+  name: 'No affordable purchase',
+  estimatedCost: 0,
+  mealsUnlocked: 0,
+  reason: 'Your remaining budget is below the cost of the cheapest helpful item, so the safest move is to stretch your pantry first and seek support if needed.',
+};
+
 const CURATED_MEALS: MealTemplate[] = [
   {
     name: 'Egg Fried Rice',
@@ -172,8 +186,28 @@ const CURATED_MEALS: MealTemplate[] = [
   },
 ];
 
+const PANTRY_SERVING_PROFILES: Record<string, PantryServingProfile> = {
+  rice: { servings: 4, isStaple: true },
+  bread: { servings: 3, isStaple: true },
+  'instant noodles': { servings: 2, isStaple: true },
+  eggs: { servings: 2, isProtein: true },
+  tofu: { servings: 2, isProtein: true },
+  sardines: { servings: 1.5, isProtein: true },
+  cabbage: { servings: 2 },
+  onion: { servings: 1, isFlavoring: true },
+  garlic: { servings: 0.5, isFlavoring: true },
+  'soy sauce': { servings: 0.5, isFlavoring: true },
+  oil: { servings: 0.5, isFlavoring: true },
+};
+
 function normalize(value: string): string {
   return value.toLowerCase().trim();
+}
+
+function extractExplicitQuantity(item: string): number | null {
+  const normalizedItem = normalize(item);
+  const quantityMatch = normalizedItem.match(/^(\d+(?:\.\d+)?)\s*(x|pcs?|pieces?|packs?|eggs?)?\s+/);
+  return quantityMatch ? Number(quantityMatch[1]) : null;
 }
 
 function uniquePantryItems(items: string[]): string[] {
@@ -230,11 +264,10 @@ function pantryItemsHelpPreference(
 
 function buildBudgetDrivenCoverage(
   budget: number,
-  daysLeft: number,
   pantryItems: string[],
   dietaryPreference: DietaryPreference,
 ): number {
-  if (budget <= 0 || daysLeft <= 0) {
+  if (budget <= 0) {
     return 0;
   }
 
@@ -248,47 +281,88 @@ function buildBudgetDrivenCoverage(
       : sum;
   }, 0);
   const effectiveDailyCost = Math.max(MIN_DAILY_FOOD_COST, BASE_DAILY_FOOD_COST - pantryDiscount);
-  return clampCoverage(toOneDecimal(budget / effectiveDailyCost), daysLeft);
+  return toOneDecimal(budget / effectiveDailyCost);
 }
 
-function clampCoverage(daysCovered: number, daysLeft: number): number {
-  return Math.min(Math.max(daysCovered, 0), daysLeft + 1);
+function buildPantryCoverage(pantryItems: string[], pantryMeals: MealTemplate[]): number {
+  if (pantryMeals.length === 0) {
+    return 0;
+  }
+
+  const templateCoverage = pantryMeals.length / MEALS_PER_DAY;
+  const servingEstimate = pantryItems.reduce((sum, item) => {
+    const explicitQuantity = extractExplicitQuantity(item);
+    const matchedProfile = Object.entries(PANTRY_SERVING_PROFILES).find(([ingredient]) => hasPantryItem([item], ingredient))?.[1];
+
+    if (!matchedProfile) {
+      return sum + 0.5;
+    }
+
+    const quantityMultiplier = explicitQuantity ? Math.min(explicitQuantity, 6) : 1;
+    return sum + matchedProfile.servings * quantityMultiplier;
+  }, 0);
+  const stapleCount = pantryItems.filter(item =>
+    Object.entries(PANTRY_SERVING_PROFILES).some(([ingredient, profile]) => profile.isStaple && hasPantryItem([item], ingredient)),
+  ).length;
+  const proteinCount = pantryItems.filter(item =>
+    Object.entries(PANTRY_SERVING_PROFILES).some(([ingredient, profile]) => profile.isProtein && hasPantryItem([item], ingredient)),
+  ).length;
+  const baseReliableCap = Math.max(0.5, servingEstimate / MEALS_PER_DAY);
+  const structuralCap = stapleCount > 0 && proteinCount > 0
+    ? Math.min(baseReliableCap, 1.5)
+    : stapleCount > 0
+      ? Math.min(baseReliableCap, 1.4)
+      : Math.min(baseReliableCap, 1);
+  const reliablePantryCap = pantryItems.length >= 5
+    ? structuralCap
+    : pantryItems.length >= 3
+      ? Math.min(structuralCap, 1.2)
+      : Math.min(structuralCap, 0.8);
+
+  return toOneDecimal(Math.min(templateCoverage, reliablePantryCap));
+}
+
+function normalizeCoverage(daysCovered: number): number {
+  return toOneDecimal(Math.max(daysCovered, 0));
 }
 
 function toOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-function buildCoverageLabel(before: number, after: number, targetDays: number): string {
-  if (after > before) {
-    return after >= targetDays
-      ? `from ${before} days to ${targetDays}+ days`
-      : `from ${before} days to ${after}+ days`;
-  }
-
-  return `stays at ${before} days`;
+function buildCoverageDisplay(daysCovered: number, targetDays: number): string {
+  const normalizedCoverage = normalizeCoverage(daysCovered);
+  return normalizedCoverage >= targetDays ? `${targetDays}+` : `${normalizedCoverage}`;
 }
 
-function buildAfterCoverageDisplay(after: number, targetDays: number): string {
-  return after >= targetDays ? `${targetDays}+` : `${after}`;
+function buildCoverageLabel(before: number, after: number, targetDays: number): string {
+  const normalizedBefore = normalizeCoverage(before);
+  const normalizedAfter = normalizeCoverage(after);
+  const beforeDisplay = buildCoverageDisplay(normalizedBefore, targetDays);
+  const afterDisplay = buildCoverageDisplay(normalizedAfter, targetDays);
+
+  if (afterDisplay !== beforeDisplay) {
+    return `from ${beforeDisplay} days to ${afterDisplay} days`;
+  }
+
+  return `stays at ${beforeDisplay} days`;
 }
 
 function buildCandidateRank(
   candidate: CandidatePurchase,
+  coverageAfterPurchase: number,
   unlockedMeals: MealTemplate[],
-  currentCoverage: number,
-): [number, number, number, number, string] {
-  const coverageAfterPurchase = currentCoverage + unlockedMeals.length / MEALS_PER_DAY;
+): [number, number, number, string] {
+  const mealValueScore = unlockedMeals.length / MEALS_PER_DAY;
   return [
-    unlockedMeals.length,
     coverageAfterPurchase,
+    mealValueScore,
     -candidate.estimatedCost,
-    candidate.name === 'Tofu' ? 1 : 0,
     candidate.name,
   ];
 }
 
-function compareCandidateRanks(a: [number, number, number, number, string], b: [number, number, number, number, string]): number {
+function compareCandidateRanks(a: [number, number, number, string], b: [number, number, number, string]): number {
   for (let index = 0; index < a.length; index += 1) {
     if (a[index] === b[index]) {
       continue;
@@ -307,15 +381,37 @@ function buildLocalContextNote(daysLeft: number): string {
 function buildPurchaseComparison(
   option: PurchaseOption,
   verdict: 'selected' | 'alternative',
+  targetDays: number,
 ): PurchaseComparison {
   return {
     name: option.candidate.name,
     estimatedCost: option.candidate.estimatedCost,
     mealsUnlocked: option.unlockedMeals.length,
     coverageAfterPurchase: option.coverageAfterPurchase,
+    coverageAfterPurchaseDisplay: buildCoverageDisplay(option.coverageAfterPurchase, targetDays),
     verdict,
     reason: option.candidate.reason,
   };
+}
+
+function buildPurchaseMealBoost(
+  candidate: CandidatePurchase,
+  unlockedMeals: MealTemplate[],
+  hasEmptyPantry: boolean,
+): number {
+  if (hasEmptyPantry) {
+    return candidate.name === 'Tofu' ? 0.9 : 0.7;
+  }
+
+  const directFoodValue = candidate.name === 'Tofu'
+    ? 0.7
+    : candidate.name === 'Eggs'
+      ? 0.6
+      : candidate.name === 'Bread'
+        ? 0.5
+        : 0.4;
+
+  return toOneDecimal(Math.min(1.2, directFoodValue + unlockedMeals.length * 0.2));
 }
 
 function buildThreeDayPlan(
@@ -327,6 +423,7 @@ function buildThreeDayPlan(
   const planDays = Math.min(daysLeft, 3);
   const meals: MealSuggestion[] = [];
   const usedMealNames = new Set<string>();
+  let purchaseCostApplied = false;
 
   for (const pantryMeal of pantryMeals) {
     if (meals.length >= Math.max(0, planDays - 1)) {
@@ -350,9 +447,10 @@ function buildThreeDayPlan(
       day: meals.length + 1,
       name: preferredUnlockedMeal.name,
       ingredients: preferredUnlockedMeal.ingredients,
-      estimatedCost: cheapestNextPurchase.estimatedCost,
+      estimatedCost: purchaseCostApplied ? 0 : cheapestNextPurchase.estimatedCost,
     });
     usedMealNames.add(preferredUnlockedMeal.name);
+    purchaseCostApplied = purchaseCostApplied || cheapestNextPurchase.estimatedCost > 0;
   }
 
   while (meals.length < planDays) {
@@ -379,12 +477,13 @@ function buildThreeDayPlan(
       day: meals.length + 1,
       name: fallbackPurchaseMeal.name,
       ingredients: fallbackPurchaseMeal.ingredients,
-      estimatedCost: cheapestNextPurchase.estimatedCost,
+      estimatedCost: purchaseCostApplied ? 0 : cheapestNextPurchase.estimatedCost,
     });
     usedMealNames.add(fallbackPurchaseMeal.name);
+    purchaseCostApplied = purchaseCostApplied || cheapestNextPurchase.estimatedCost > 0;
   }
 
-  if (meals.length === 0 && planDays > 0) {
+  if (meals.length === 0 && planDays > 0 && cheapestNextPurchase.estimatedCost > 0) {
     const fallbackMeal = EMPTY_PANTRY_FALLBACKS[normalize(cheapestNextPurchase.name)];
     meals.push({
       day: 1,
@@ -406,14 +505,13 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
     .filter(meal => meal.ingredients.every(ingredient => hasPantryItem(pantryItems, ingredient)))
     .sort(compareMealsByName);
 
-  const pantryCoverage = pantryMeals.length / MEALS_PER_DAY;
+  const pantryCoverage = buildPantryCoverage(pantryItems, pantryMeals);
   const budgetDrivenCoverage = buildBudgetDrivenCoverage(
     input.budget,
-    input.daysLeft,
     pantryItems,
     input.dietaryPreference,
   );
-  const currentCoverage = toOneDecimal(Math.max(clampCoverage(pantryCoverage, input.daysLeft), budgetDrivenCoverage));
+  const currentCoverage = normalizeCoverage(Math.max(pantryCoverage, budgetDrivenCoverage));
 
   const purchaseOptions = PURCHASE_CANDIDATES
     .filter(candidate => candidate.estimatedCost <= input.budget && purchaseMatchesPreference(candidate, input.dietaryPreference))
@@ -428,13 +526,20 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
       });
 
       const sortedUnlockedMeals = unlockedMeals.sort(compareMealsByName);
+      const purchasePantryItems = uniquePantryItems([...pantryItems, candidate.name]);
+      const coverageAfterPurchase = normalizeCoverage(
+        buildBudgetDrivenCoverage(
+          input.budget - candidate.estimatedCost,
+          purchasePantryItems,
+          input.dietaryPreference,
+        ) + buildPurchaseMealBoost(candidate, sortedUnlockedMeals, hasEmptyPantry),
+      );
+
       return {
         candidate,
         unlockedMeals: sortedUnlockedMeals,
-        rank: buildCandidateRank(candidate, sortedUnlockedMeals, currentCoverage),
-        coverageAfterPurchase: toOneDecimal(
-          clampCoverage(currentCoverage + sortedUnlockedMeals.length / MEALS_PER_DAY, input.daysLeft),
-        ),
+        rank: buildCandidateRank(candidate, coverageAfterPurchase, sortedUnlockedMeals),
+        coverageAfterPurchase,
       };
     })
     .filter(option => option.unlockedMeals.length > 0);
@@ -464,15 +569,32 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
 
   const cheapestNextPurchase: ShoppingItem = selectedPurchase?.candidate ?? fallbackPurchase;
   const unlockedMeals = selectedPurchase?.unlockedMeals ?? [];
-  const fallbackUnlockedMeals = !selectedPurchase && hasEmptyPantry && cheapestNextPurchase.estimatedCost <= input.budget ? 1 : 0;
-  const improvedCoverage = toOneDecimal(
-    clampCoverage(currentCoverage + (unlockedMeals.length + fallbackUnlockedMeals) / MEALS_PER_DAY, input.daysLeft),
-  );
+  const hasAffordablePurchase = cheapestNextPurchase.estimatedCost <= input.budget;
+  const effectiveNextPurchase = hasAffordablePurchase ? cheapestNextPurchase : NO_AFFORDABLE_PURCHASE;
+  const fallbackUnlockedMeals = !selectedPurchase && hasEmptyPantry && hasAffordablePurchase ? 1 : 0;
+  const improvedCoverage = selectedPurchase
+    ? selectedPurchase.coverageAfterPurchase
+    : hasAffordablePurchase
+      ? normalizeCoverage(
+          buildBudgetDrivenCoverage(
+            input.budget - effectiveNextPurchase.estimatedCost,
+            uniquePantryItems([...pantryItems, effectiveNextPurchase.name]),
+            input.dietaryPreference,
+          ) + (fallbackUnlockedMeals > 0 ? buildPurchaseMealBoost(
+            {
+              ...effectiveNextPurchase,
+              dietaryTags: [input.dietaryPreference],
+            } as CandidatePurchase,
+            [],
+            hasEmptyPantry,
+          ) : 0),
+        )
+      : currentCoverage;
   const displayedImprovedCoverage = Math.max(currentCoverage, improvedCoverage);
   const coverageImproved = buildCoverageLabel(currentCoverage, displayedImprovedCoverage, input.daysLeft);
 
   let survivalScore: SurvivalStatus = 'Critical';
-  if (currentCoverage >= input.daysLeft + 0.3) {
+  if (currentCoverage >= input.daysLeft) {
     survivalScore = 'Safe';
   } else if (currentCoverage >= input.daysLeft * 0.7) {
     survivalScore = 'Tight';
@@ -482,10 +604,10 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
   if (survivalScore === 'Safe') {
     confidenceLevel = pantryMeals.length >= 4 && input.budget / input.daysLeft >= 6 ? 'High' : 'Medium';
   } else if (survivalScore === 'Tight') {
-    confidenceLevel = pantryMeals.length >= 3 && unlockedMeals.length >= 2 ? 'Medium' : 'Low';
+    confidenceLevel = pantryMeals.length >= 3 || improvedCoverage >= input.daysLeft ? 'Medium' : 'Low';
   }
 
-  const meals = buildThreeDayPlan(pantryMeals, unlockedMeals, input.daysLeft, cheapestNextPurchase);
+  const meals = buildThreeDayPlan(pantryMeals, hasAffordablePurchase ? unlockedMeals : [], input.daysLeft, effectiveNextPurchase);
   const allIngredients = [...new Set(meals.flatMap(meal => meal.ingredients))];
   const pantryItemsUsed = allIngredients.filter(ingredient => hasPantryItem(pantryItems, ingredient));
   const missingIngredients = allIngredients.filter(ingredient => !hasPantryItem(pantryItems, ingredient));
@@ -494,7 +616,9 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
   const totalCostMax = toOneDecimal(totalCostMin + (missingIngredients.length > 0 ? 1.5 : 0));
 
   const urgencyWarning = survivalScore === 'Critical'
-    ? 'Your current food supply is critically low. Without immediate action, you may face days without adequate meals.'
+    ? hasAffordablePurchase
+      ? 'Your current food supply is critically low. Without immediate action, you may face days without adequate meals.'
+      : 'Your current food supply is critically low and your budget is below the cost of the cheapest helpful item. Stretch your pantry carefully and seek immediate support if needed.'
     : survivalScore === 'Tight'
       ? 'Without adjustment, your current food plan may not last until your next allowance.'
       : 'Your situation looks manageable, but staying mindful of spending will help you stay on track.';
@@ -507,35 +631,42 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
         .map(option => buildPurchaseComparison(
           option,
           option.candidate.name === selectedPurchase.candidate.name ? 'selected' : 'alternative',
+          input.daysLeft,
         ))
     : [
         {
-          name: cheapestNextPurchase.name,
-          estimatedCost: cheapestNextPurchase.estimatedCost,
-          mealsUnlocked: fallbackUnlockedMeals || cheapestNextPurchase.mealsUnlocked,
+          name: effectiveNextPurchase.name,
+          estimatedCost: effectiveNextPurchase.estimatedCost,
+          mealsUnlocked: hasAffordablePurchase ? fallbackUnlockedMeals || effectiveNextPurchase.mealsUnlocked : 0,
           coverageAfterPurchase: displayedImprovedCoverage,
+          coverageAfterPurchaseDisplay: buildCoverageDisplay(displayedImprovedCoverage, input.daysLeft),
           verdict: 'selected' as const,
-          reason: cheapestNextPurchase.reason,
+          reason: effectiveNextPurchase.reason,
         },
       ];
 
   const purchaseRationale = selectedPurchase
     ? `${selectedPurchase.candidate.name} is the best next purchase because it unlocks ${selectedPurchase.unlockedMeals.length} extra meal option${selectedPurchase.unlockedMeals.length === 1 ? '' : 's'} and moves your coverage ${coverageImproved}.`
-    : `${cheapestNextPurchase.name} is the safest fallback because it gives you at least one workable low-cost meal without requiring a full grocery restock.`;
+    : hasAffordablePurchase
+      ? `${effectiveNextPurchase.name} is the safest fallback because it gives you at least one workable low-cost meal without requiring a full grocery restock.`
+      : 'No realistic purchase fits this budget, so the safest plan is to protect your remaining pantry and seek free or subsidized food support if needed.';
 
   return {
     survivalScore,
     confidenceLevel,
     daysCovered: currentCoverage,
+    daysCoveredDisplay: buildCoverageDisplay(currentCoverage, input.daysLeft),
     urgencyWarning,
-    cheapestNextPurchase,
+    cheapestNextPurchase: effectiveNextPurchase,
     meals,
     pantryItemsUsed,
     missingIngredients,
     totalEstimatedCost: { min: totalCostMin, max: totalCostMax },
-    budgetAfterShopping: Math.round((input.budget - cheapestNextPurchase.estimatedCost) * 100) / 100,
+    budgetAfterShopping: Math.round((input.budget - effectiveNextPurchase.estimatedCost) * 100) / 100,
     coverageImproved,
-    finalMessage: 'You do not need a full grocery restock. One low-cost purchase can make your current food plan more stable.',
+    finalMessage: hasAffordablePurchase
+      ? 'You do not need a full grocery restock. One low-cost purchase can make your current food plan more stable.'
+      : 'Your budget is too tight for the suggested items right now, so focus on stretching pantry staples and getting support if the gap becomes unsafe.',
     recommendationExplainer: {
       pantryMealNames: pantryMeals.map(meal => meal.name),
       pantryMealCount: pantryMeals.length,
@@ -544,8 +675,9 @@ export function calculateSurvival(input: UserInput): SurvivalResult {
       comparisonItems,
       coverageSummary: {
         before: currentCoverage,
+        beforeDisplay: buildCoverageDisplay(currentCoverage, input.daysLeft),
         after: displayedImprovedCoverage,
-        afterDisplay: buildAfterCoverageDisplay(displayedImprovedCoverage, input.daysLeft),
+        afterDisplay: buildCoverageDisplay(displayedImprovedCoverage, input.daysLeft),
         targetDays: input.daysLeft,
         label: coverageImproved,
       },
