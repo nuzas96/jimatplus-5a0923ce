@@ -6,10 +6,10 @@ interface CalculatingScreenProps {
 }
 
 const STEPS = [
-  'Checking your pantry...',
-  'Matching meal options...',
-  'Estimating coverage...',
-  'Finding the best next purchase...',
+  'Scanning your pantry...',
+  'Matching survival meals...',
+  'Calculating coverage...',
+  'Finding the best move...',
 ];
 
 const CalculatingScreen = ({ onComplete }: CalculatingScreenProps) => {
@@ -21,12 +21,12 @@ const CalculatingScreen = ({ onComplete }: CalculatingScreenProps) => {
       setProgress(p => {
         if (p >= 100) {
           clearInterval(timer);
-          setTimeout(onComplete, 300);
+          setTimeout(onComplete, 400);
           return 100;
         }
-        return p + 1.5;
+        return p + 1.2;
       });
-    }, 25);
+    }, 30);
     return () => clearInterval(timer);
   }, [onComplete]);
 
@@ -36,50 +36,61 @@ const CalculatingScreen = ({ onComplete }: CalculatingScreenProps) => {
   }, [progress]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 gradient-surface">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 gradient-surface relative overflow-hidden">
+      {/* Ambient glow */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute w-[500px] h-[500px] rounded-full bg-primary blur-3xl"
+      />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="flex flex-col items-center max-w-xs w-full"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col items-center max-w-xs w-full relative z-10"
       >
-        {/* Animated circles */}
-        <div className="relative w-20 h-20 mb-8">
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 rounded-full bg-primary"
-          />
-          <motion.div
-            animate={{ scale: [1, 1.08, 1], opacity: [0.25, 0.4, 0.25] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-            className="absolute inset-2 rounded-full bg-primary"
-          />
-          <div className="absolute inset-4 rounded-full gradient-warm flex items-center justify-center shadow-glow">
-            <span className="font-mono text-sm font-bold text-primary-foreground">
-              {Math.round(progress)}%
+        {/* Metric circle */}
+        <div className="relative w-28 h-28 mb-10">
+          {/* Outer ring */}
+          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 112 112">
+            <circle cx="56" cy="56" r="50" fill="none" stroke="hsl(210 14% 16%)" strokeWidth="3" />
+            <motion.circle
+              cx="56" cy="56" r="50" fill="none"
+              stroke="hsl(160 60% 45%)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={314}
+              strokeDashoffset={314 - (314 * Math.min(progress, 100)) / 100}
+              transition={{ ease: 'easeOut', duration: 0.1 }}
+            />
+          </svg>
+          {/* Center */}
+          <div className="absolute inset-3 rounded-full bg-card border border-border flex items-center justify-center">
+            <span className="font-mono text-2xl font-bold text-foreground">
+              {Math.round(Math.min(progress, 100))}
             </span>
           </div>
         </div>
 
-        <h2 className="font-display text-xl text-foreground mb-2 text-center">Analyzing your situation</h2>
+        <h2 className="font-display text-xl text-foreground mb-3 text-center">Analyzing your situation</h2>
 
         <motion.p
           key={stepIndex}
-          initial={{ opacity: 0, y: 4 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="text-sm text-muted-foreground mb-8 text-center"
+          className="text-sm text-muted-foreground mb-10 text-center"
         >
           {STEPS[stepIndex]}
         </motion.p>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className="w-full h-1 bg-border rounded-full overflow-hidden">
           <motion.div
             className="h-full gradient-warm rounded-full"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(progress, 100)}%` }}
             transition={{ ease: 'easeOut' }}
           />
         </div>
