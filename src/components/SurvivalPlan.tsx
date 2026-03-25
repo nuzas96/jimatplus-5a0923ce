@@ -36,21 +36,7 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           <p className="text-sm text-muted-foreground mb-6">Pantry-first meals, minimal spending, one strategic purchase.</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-6"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Info className="w-4 h-4 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              This plan is a practical estimate, not exact meal prep tracking. It prioritizes pantry use first, then applies one strategic purchase once across the plan.
-            </p>
-          </div>
-        </motion.div>
+        {/* Meal cards */}
 
         <div className="space-y-3 mb-6">
           {result.meals.map((meal, index) => (
