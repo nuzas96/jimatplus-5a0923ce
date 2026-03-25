@@ -27,7 +27,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/8 border border-primary/15 mb-4"
         >
           <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+</span>
+          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+ Score</span>
         </motion.div>
 
         <motion.p
