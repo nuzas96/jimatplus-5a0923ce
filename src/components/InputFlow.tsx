@@ -139,10 +139,10 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             Tell us your current food situation
           </h2>
           <p className="text-muted-foreground text-sm mb-2">
-            JiMAT+ will estimate how far your pantry and budget can stretch before your next allowance.
+            JiMAT+ estimates how far your pantry and budget can stretch.
           </p>
           <p className="text-xs text-muted-foreground/70 mb-8">
-            This is a practical student estimate, not exact inventory tracking. Add quantities when you can for a more believable result.
+            Add quantities when you can for better accuracy.
           </p>
         </motion.div>
 
@@ -239,11 +239,8 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             </div>
             <label className="font-label text-muted-foreground">What Do You Still Have At Home?</label>
           </div>
-          <p className="text-xs text-muted-foreground/60 mb-2 ml-9">
-            Tap items to add them, then adjust quantity.
-          </p>
-          <p className="text-xs text-muted-foreground/60 mb-4 ml-9">
-            Counts like `3 eggs` improve the estimate. If you only list an item once, the app assumes a small student-sized amount.
+          <p className="text-xs text-muted-foreground/60 mb-3 ml-9">
+            Tap items to add them. Quantities like "3 eggs" improve the estimate.
           </p>
 
           <div className="flex flex-wrap gap-1.5 mb-4">

@@ -32,28 +32,11 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Survival Plan</h2>
-          <p className="text-sm text-muted-foreground mb-2">Pantry-first meals, minimal spending, clearer next steps.</p>
-          <p className="text-xs text-muted-foreground/70 mb-4">
-            {result.recommendationExplainer.coverageSummary.label} after one strategic purchase.
-          </p>
+          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your 3-Day Survival Plan</h2>
+          <p className="text-sm text-muted-foreground mb-6">Pantry-first meals, minimal spending, one strategic purchase.</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-6"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Info className="w-4 h-4 text-primary" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              This plan is a practical estimate, not exact meal prep tracking. It prioritizes pantry use first, then applies one strategic purchase once across the plan.
-            </p>
-          </div>
-        </motion.div>
+        {/* Meal cards */}
 
         <div className="space-y-3 mb-6">
           {result.meals.map((meal, index) => (
@@ -152,7 +135,7 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
             RM{result.totalEstimatedCost.min.toFixed(2)} - RM{result.totalEstimatedCost.max.toFixed(2)}
           </span>
           <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-            This estimate assumes your recommended purchase is paid for once, then reused across the plan where relevant.
+            The recommended purchase is bought once and reused across the plan.
           </p>
         </motion.div>
 

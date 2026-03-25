@@ -48,7 +48,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div {...fadeUp} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Results</h2>
-          <p className="text-sm text-muted-foreground mb-6">Here&apos;s the fastest read on your current food situation.</p>
+          <p className="text-sm text-muted-foreground mb-6">Your food situation at a glance.</p>
         </motion.div>
 
         <motion.div
@@ -59,9 +59,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative flex items-center gap-6">
-            <div className={`w-24 h-24 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
-              <div className="font-mono text-3xl font-bold text-foreground">{result.daysCoveredDisplay}</div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">days</span>
+            <div className={`w-28 h-28 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
+              <div className="font-mono text-4xl font-bold text-foreground leading-none">{result.daysCoveredDisplay}</div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">days</span>
             </div>
             <div className="flex-1 min-w-0">
               <span className="font-label text-muted-foreground block mb-1.5">Estimated Days Covered</span>
@@ -83,9 +83,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
               <Info className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground mb-1">How this estimate works</p>
+              <p className="text-sm font-semibold text-foreground mb-1">How this works</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                This is a survival estimate, not exact inventory tracking. It combines your pantry items, rough serving assumptions, and remaining budget. Adding quantities like `3 eggs` improves accuracy.
+                A survival estimate based on your pantry, serving assumptions, and remaining budget. Adding quantities like "3 eggs" improves accuracy.
               </p>
             </div>
           </div>

@@ -6,9 +6,9 @@ interface LandingPageProps {
 }
 
 const VALUE_HIGHLIGHTS = [
-  { icon: Calendar, text: 'Estimate how many days your food can still cover', delay: 0.4 },
-  { icon: AlertTriangle, text: 'See the risk before your budget runs out', delay: 0.5 },
-  { icon: ShoppingCart, text: 'Get the cheapest next purchase to stabilize the plan', delay: 0.6 },
+  { icon: Calendar, text: 'Know how many days your food can realistically cover', delay: 0.4 },
+  { icon: AlertTriangle, text: 'See what happens if you don\'t act before allowance day', delay: 0.5 },
+  { icon: ShoppingCart, text: 'Find the single cheapest purchase to stabilize your plan', delay: 0.6 },
 ];
 
 const LandingPage = ({ onStart }: LandingPageProps) => {
@@ -27,7 +27,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/8 border border-primary/15 mb-4"
         >
           <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+</span>
+          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+ Score</span>
         </motion.div>
 
         <motion.p
@@ -36,7 +36,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           className="text-xs sm:text-sm uppercase tracking-[0.24em] text-muted-foreground/75 mb-4"
         >
-          Student Food Budget Survival Planner
+          Student Food Security Decision Engine
         </motion.p>
 
         <motion.h1
@@ -56,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
         >
-          JiMAT+ helps students turn leftover pantry items and limited ringgit into a practical survival plan for the last stretch before the next allowance.
+          Enter your remaining budget and pantry items. JiMAT+ tells you how many days you can last and what one purchase can change.
         </motion.p>
 
         <motion.p
@@ -65,7 +65,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-sm text-muted-foreground/70 mb-10 max-w-sm mx-auto italic"
         >
-          You have not run out yet. JiMAT+ helps you make the next move before things become critical.
+          You haven't run out yet. JiMAT+ helps you act before it becomes critical.
         </motion.p>
 
         <motion.button
