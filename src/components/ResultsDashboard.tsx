@@ -48,7 +48,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div {...fadeUp} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Results</h2>
-          <p className="text-sm text-muted-foreground mb-6">Here&apos;s the fastest read on your current food situation.</p>
+          <p className="text-sm text-muted-foreground mb-6">Your food situation at a glance.</p>
         </motion.div>
 
         <motion.div
