@@ -59,9 +59,9 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative flex items-center gap-6">
-            <div className={`w-24 h-24 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
-              <div className="font-mono text-3xl font-bold text-foreground">{result.daysCoveredDisplay}</div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">days</span>
+            <div className={`w-28 h-28 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
+              <div className="font-mono text-4xl font-bold text-foreground leading-none">{result.daysCoveredDisplay}</div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">days</span>
             </div>
             <div className="flex-1 min-w-0">
               <span className="font-label text-muted-foreground block mb-1.5">Estimated Days Covered</span>
