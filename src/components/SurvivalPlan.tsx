@@ -32,11 +32,8 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Survival Plan</h2>
-          <p className="text-sm text-muted-foreground mb-2">Pantry-first meals, minimal spending, clearer next steps.</p>
-          <p className="text-xs text-muted-foreground/70 mb-4">
-            {result.recommendationExplainer.coverageSummary.label} after one strategic purchase.
-          </p>
+          <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your 3-Day Survival Plan</h2>
+          <p className="text-sm text-muted-foreground mb-6">Pantry-first meals, minimal spending, one strategic purchase.</p>
         </motion.div>
 
         <motion.div
