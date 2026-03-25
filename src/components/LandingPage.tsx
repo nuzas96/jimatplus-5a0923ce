@@ -56,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
         >
-          JiMAT+ helps students turn leftover pantry items and limited ringgit into a practical survival plan for the last stretch before the next allowance.
+          Enter your remaining budget and pantry items. JiMAT+ tells you how many days you can last and what one purchase can change.
         </motion.p>
 
         <motion.p
