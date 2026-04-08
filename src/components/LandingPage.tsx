@@ -6,9 +6,9 @@ interface LandingPageProps {
 }
 
 const VALUE_HIGHLIGHTS = [
-  { icon: Calendar, text: 'Know how many days your food can realistically cover', delay: 0.4 },
-  { icon: AlertTriangle, text: 'See what happens if you don\'t act before allowance day', delay: 0.5 },
-  { icon: ShoppingCart, text: 'Find the lowest-cost stabilizing action before things become critical', delay: 0.6 },
+  { icon: Calendar, label: 'Coverage', delay: 0.18 },
+  { icon: AlertTriangle, label: 'Risk', delay: 0.22 },
+  { icon: ShoppingCart, label: 'Action', delay: 0.26 },
 ];
 
 const LandingPage = ({ onStart }: LandingPageProps) => {
@@ -43,12 +43,29 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-4xl sm:text-5xl leading-[1.1] text-foreground mb-5"
+          className="font-display text-4xl sm:text-5xl leading-[1.1] text-foreground mb-6"
           style={{ textWrap: 'balance' }}
         >
           Can your food and budget
           <span className="text-primary"> really last until allowance day?</span>
         </motion.h1>
+
+        <div className="flex items-center justify-center gap-6 mb-6">
+          {VALUE_HIGHLIGHTS.map(({ icon: Icon, label, delay }) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay }}
+              className="flex flex-col items-center gap-2"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground tracking-wide">{label}</span>
+            </motion.div>
+          ))}
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 8 }}
@@ -67,23 +84,6 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         >
           You have not run out yet. JiMAT+ helps you act before food insecurity becomes critical.
         </motion.p>
-
-        <div className="mt-10 flex flex-col items-center gap-3">
-          {VALUE_HIGHLIGHTS.map(({ icon: Icon, text, delay }) => (
-            <motion.div
-              key={text}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay }}
-              className="flex items-center gap-3 text-muted-foreground"
-            >
-              <div className="w-8 h-8 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm font-medium text-center">{text}</span>
-            </motion.div>
-          ))}
-        </div>
 
         <motion.button
           initial={{ opacity: 0, y: 8 }}
