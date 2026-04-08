@@ -169,26 +169,26 @@ export const finalsCatalog: FinalsCatalog = {
 
 const metrics: ValidationMetric[] = [
   {
-    label: 'Direct student checks completed',
-    value: 'Pending',
-    detail: 'Run 3 to 5 live website walkthroughs, then replace this card with the real completion count and findings.',
+    label: 'Early validation responses collected',
+    value: '16',
+    detail: 'Google Form early validation captured 16 student responses on clarity, usefulness, support responsibility, and campus adoption intent.',
   },
   {
-    label: 'Google Form responses collected',
-    value: 'Pending',
-    detail: 'Use the validation survey template to gather broader early feedback and swap in the real response count.',
+    label: 'Recommendation clarity',
+    value: '68.8%',
+    detail: '11 of 16 respondents rated the recommendation as very clear after seeing the canonical JiMAT+ scenario.',
   },
   {
-    label: 'Pricing items manually sampled',
-    value: 'Pending',
-    detail: 'Check tofu, eggs, bread, sardines, and cabbage against nearby student-accessible sources before finals.',
+    label: 'Campus usefulness signal',
+    value: '81.3%',
+    detail: '13 of 16 respondents said they would use something like JiMAT+ if their campus offered it.',
   },
 ];
 
 const quotes: ValidationQuote[] = [
   {
-    quote: 'Replace this with a real student quote after the first direct usability check.',
-    source: 'Pending early student validation',
+    quote: 'i highly recommend this to others because our country is currently facing inflation, so this can help ensure that no one is negatively affected.',
+    source: 'Early student validation response, n=16',
   },
 ];
 
@@ -196,7 +196,7 @@ const scenarios: ScenarioEvidence[] = [
   {
     name: 'Canonical finals demo',
     summary: 'RM20, 3 days left, rice, eggs, onion, instant noodles, Student-Area Budget Preset context.',
-    outcome: 'Returns 2.8 days, Tight, Medium confidence, and recommends tofu at RM4.50.',
+    outcome: 'Returns 2.8 days, Tight, Medium confidence, and recommends tofu at RM4.50 with coverage improving to 3+ days.',
   },
   {
     name: 'Critical low-budget edge case',
@@ -231,6 +231,13 @@ const comparisonRows: ComparisonRow[] = [
     recipeApps: 'No.',
     budgetingApps: 'No.',
     pantryApps: 'No.',
+  },
+  {
+    category: 'Feels more useful than a normal recipe app for this exact problem',
+    jimatPlus: '87.5% of early respondents said yes.',
+    recipeApps: 'Lower fit for urgency-first survival decisions.',
+    budgetingApps: 'Does not translate pantry into meal coverage.',
+    pantryApps: 'Does not rank the next lowest-cost stabilizing action.',
   },
 ];
 

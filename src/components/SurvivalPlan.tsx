@@ -39,15 +39,12 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
         >
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Survival Plan</h2>
           <p className="text-sm text-muted-foreground mb-2">
-            {hasPurchase ? 'Pantry-first meals, minimal spending, clearer next steps.' : 'Pantry-first meals and safer next steps for the days ahead.'}
+            {hasPurchase ? 'Pantry-first meals, minimal spend, and a defensible next step.' : 'Pantry-first meals and safer next steps for the days ahead.'}
           </p>
           <p className="text-xs text-muted-foreground/70 mb-4">
             {hasPurchase
               ? `${result.recommendationExplainer.coverageSummary.label} after one strategic purchase.`
               : `${result.recommendationExplainer.coverageSummary.label} without any extra purchase.`}
-          </p>
-          <p className="text-xs text-muted-foreground/70 mb-4">
-            Pricing context: {result.selectedPricingContext.label}
           </p>
         </motion.div>
 
@@ -63,8 +60,8 @@ const SurvivalPlan = ({ result, onViewShopping, onBack }: SurvivalPlanProps) => 
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {hasPurchase
-                ? 'This plan is a practical estimate, not exact meal prep tracking. It prioritizes pantry use first, then applies one strategic purchase once across the plan.'
-                : 'This plan is a practical estimate, not exact meal prep tracking. It prioritizes pantry use first and avoids adding any purchase that your current situation does not support.'}
+                ? 'This plan is a practical estimate, not exact meal prep tracking. It protects pantry use first, then applies one strategic purchase once across the plan.'
+                : 'This plan is a practical estimate, not exact meal prep tracking. It protects pantry use first and avoids adding any purchase that your current situation does not support.'}
             </p>
           </div>
         </motion.div>

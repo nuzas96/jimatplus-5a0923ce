@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, Clock, Leaf, Minus, Package, Plus, Wallet, X } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 import { DietaryPreference, UserInput } from '@/lib/types';
-import { getPricingContexts } from '@/lib/data-api';
 import { DEFAULT_PRICING_CONTEXT_ID } from '@/lib/finals-data';
 
 interface InputFlowProps {
@@ -45,10 +43,6 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
   const [pricingContext, setPricingContext] = useState(DEFAULT_PRICING_CONTEXT_ID);
   const [pantryCounts, setPantryCounts] = useState<Record<string, number>>({});
   const [currentItem, setCurrentItem] = useState('');
-  const { data: pricingContexts = [] } = useQuery({
-    queryKey: ['pricing-contexts'],
-    queryFn: getPricingContexts,
-  });
 
   const setItemQuantity = (item: string, nextQuantity: number) => {
     const normalizedItem = normalizeItemLabel(item);
@@ -148,10 +142,10 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             Tell us your current food situation
           </h2>
           <p className="text-muted-foreground text-sm mb-2">
-            JiMAT+ estimates how far your pantry and budget can stretch.
+            JiMAT+ turns your remaining budget and pantry into a fast survival decision.
           </p>
           <p className="text-xs text-muted-foreground/70 mb-8">
-            Add quantities when you can for better accuracy.
+            Keep it simple. Add quantities when you can for a stronger estimate.
           </p>
         </motion.div>
 
@@ -237,40 +231,6 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
 
         <motion.div
           custom={4}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-          className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Wallet className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <label className="font-label text-muted-foreground">Pricing Context</label>
-          </div>
-          <div className="grid gap-2">
-            {pricingContexts.map(option => (
-              <button
-                key={option.id}
-                onClick={() => setPricingContext(option.id)}
-                className={`rounded-xl border px-3.5 py-3 text-left transition-all ${
-                  pricingContext === option.id
-                    ? 'border-primary/25 bg-primary/10'
-                    : 'border-border/40 bg-muted/40 hover:border-border/60'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-foreground">{option.label}</span>
-                  {pricingContext === option.id && <span className="text-[11px] font-semibold uppercase tracking-wide text-primary">Selected</span>}
-                </div>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{option.contextNote}</p>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          custom={5}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
@@ -386,7 +346,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
         </motion.div>
 
         <motion.button
-          custom={6}
+          custom={5}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"

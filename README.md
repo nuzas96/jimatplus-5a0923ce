@@ -14,8 +14,9 @@ It helps students answer one urgent question:
 - warns what may happen if the user does nothing
 - recommends the **Best Next Purchase**
 - generates a short survival plan and shopping summary
-- supports **pricing contexts** such as `Student-Area Budget Preset`, `Campus Budget Preset`, and `Urban Off-Campus`
+- keeps a curated internal pricing preset for deterministic demo outputs
 - surfaces **support options** when the situation becomes critical
+- shows compact trust signals to explain why the recommendation is defensible
 
 ## Locked Demo Scenario
 
@@ -43,14 +44,34 @@ JiMAT+ fits the Food Security theme because it addresses a real short-term food 
 
 - React + TypeScript frontend for the guided assessment flow
 - structured finals data layer for meals, purchase candidates, support resources, and pricing contexts
-- deterministic recommendation engine with context-aware pricing
+- deterministic recommendation engine with an internal pricing preset layer
 - local assessment logging for internal demo analytics and proof packaging
 
 ## Finals Proof Notes
 
 - `Student-Area Budget Preset` is a manually maintained finals-demo pricing preset calibrated around student-accessible shops near the UniKL MIIT area
 - validation, pricing proof, comparison, and commercial viability should be presented in the finals deck rather than in the public app UI
+- the public demo flow does not expose pricing-context controls
 - user-facing claims should stay modest and exact: small-sample early validation, not large-scale market validation
+
+## Early Validation Snapshot
+
+- total early student responses: `16`
+- `93.8%` said they have faced food and budget uncertainty near allowance day
+- `68.8%` rated the recommendation as very clear
+- `87.5%` said JiMAT+ felt more useful than a normal recipe app for this exact problem
+- `87.5%` said the support options made the app feel more responsible in critical cases
+- `81.3%` said they would use something like this if their campus offered it
+
+Current quote used in finals packaging:
+
+`i highly recommend this to others because our country is currently facing inflation, so this can help ensure that no one is negatively affected.`
+
+## Pricing Proof Wording
+
+- safe current wording: `JiMAT+ uses a curated Student-Area Budget Preset for the finals demo.`
+- stronger wording only after manual checks: `Sampled nearby student-market prices were used to calibrate the Student-Area Budget Preset.`
+- do not claim official campus prices, real-time pricing, or verified institutional price feeds
 
 ## Stack
 

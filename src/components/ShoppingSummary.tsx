@@ -14,11 +14,33 @@ const fadeUp = {
   animate: { opacity: 1, y: 0 },
 };
 
+function getStatusFromCoverage(coverage: number, targetDays: number): 'Safe' | 'Tight' | 'Critical' {
+  if (coverage >= targetDays) {
+    return 'Safe';
+  }
+
+  if (coverage >= targetDays * 0.7) {
+    return 'Tight';
+  }
+
+  return 'Critical';
+}
+
+const statusColors = {
+  Safe: 'bg-status-safe/10 text-status-safe',
+  Tight: 'bg-status-tight/10 text-status-tight',
+  Critical: 'bg-status-critical/10 text-status-critical',
+};
+
 const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryProps) => {
   const selectedComparison = result.recommendationExplainer.comparisonItems.find(item => item.verdict === 'selected');
   const coverageChanged = result.recommendationExplainer.coverageSummary.afterDisplay !== result.recommendationExplainer.coverageSummary.beforeDisplay;
   const hasPurchase = result.cheapestNextPurchase.estimatedCost > 0;
   const isNoUrgentPurchase = result.cheapestNextPurchase.name === 'No urgent purchase needed';
+  const projectedStatus = getStatusFromCoverage(
+    result.recommendationExplainer.coverageSummary.after,
+    result.recommendationExplainer.coverageSummary.targetDays,
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
@@ -36,7 +58,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">JiMAT+ Shopping Summary</h2>
           <p className="text-sm text-muted-foreground mb-8">
             {hasPurchase
-              ? 'One smart move to stabilize your plan without overspending.'
+              ? 'One low-cost move to stabilize your plan without overspending.'
               : isNoUrgentPurchase
                 ? 'You are already in a stable position for this period.'
                 : 'Your budget is too tight for a helpful purchase right now.'}
@@ -55,7 +77,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             <p className="text-xs text-muted-foreground leading-relaxed">
               {hasPurchase
                 ? 'This recommendation is optimized for survival coverage and affordability, not full nutrition planning or exact household inventory.'
-                : 'This summary reflects the safest next step for your current coverage and budget position, not full nutrition planning or exact household inventory.'}
+                : 'This summary reflects the safest next step for your current coverage and budget position, not a full nutrition plan or exact household inventory.'}
             </p>
           </div>
         </motion.div>
@@ -110,16 +132,6 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </div>
         </motion.div>
 
-        <motion.div
-          {...fadeUp}
-          transition={{ delay: 0.24, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
-        >
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Pricing Context</p>
-          <p className="mt-1 text-sm font-semibold text-foreground">{result.selectedPricingContext.label}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{result.selectedPricingContext.contextNote}</p>
-        </motion.div>
-
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
             <span className="font-label text-muted-foreground block mb-2">Meals Unlocked</span>
@@ -137,6 +149,45 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             </div>
           </div>
         </motion.div>
+
+        {hasPurchase && (
+          <motion.div
+            {...fadeUp}
+            transition={{ delay: 0.34, duration: 0.4 }}
+            className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
+          >
+            <p className="text-sm font-semibold text-foreground mb-3">Before vs After This Purchase</p>
+            <div className="space-y-2">
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+                <span className="text-xs font-medium text-muted-foreground">Days covered</span>
+                <span className="rounded-lg bg-muted/30 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
+                  {result.recommendationExplainer.coverageSummary.beforeDisplay}
+                </span>
+                <span className="rounded-lg bg-primary/8 px-3 py-2 text-center font-mono text-sm font-semibold text-primary">
+                  {result.recommendationExplainer.coverageSummary.afterDisplay}
+                </span>
+              </div>
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+                <span className="text-xs font-medium text-muted-foreground">Survival status</span>
+                <span className={`rounded-lg px-3 py-2 text-center text-sm font-semibold ${statusColors[result.survivalScore]}`}>
+                  {result.survivalScore}
+                </span>
+                <span className={`rounded-lg px-3 py-2 text-center text-sm font-semibold ${statusColors[projectedStatus]}`}>
+                  {projectedStatus}
+                </span>
+              </div>
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+                <span className="text-xs font-medium text-muted-foreground">Budget after action</span>
+                <span className="rounded-lg bg-muted/30 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
+                  RM{input.budget.toFixed(2)}
+                </span>
+                <span className="rounded-lg bg-primary/8 px-3 py-2 text-center font-mono text-sm font-semibold text-primary">
+                  RM{result.budgetAfterShopping.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           {...fadeUp}

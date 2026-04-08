@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, ArrowRight, BarChart3, ChefHat, ChevronLeft, HeartHandshake, Info, MapPinned, Scale, ShoppingBag, TrendingDown, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, ChefHat, ChevronLeft, HeartHandshake, Info, Scale, ShoppingBag, TrendingDown, Zap } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ResultsDashboardProps {
@@ -21,6 +21,18 @@ const confidenceColors = {
   Low: 'text-status-critical',
 };
 
+function getStatusFromCoverage(coverage: number, targetDays: number): 'Safe' | 'Tight' | 'Critical' {
+  if (coverage >= targetDays) {
+    return 'Safe';
+  }
+
+  if (coverage >= targetDays * 0.7) {
+    return 'Tight';
+  }
+
+  return 'Critical';
+}
+
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
@@ -28,6 +40,12 @@ const fadeUp = {
 
 const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboardProps) => {
   const config = statusConfig[result.survivalScore];
+  const projectedStatus = getStatusFromCoverage(
+    result.recommendationExplainer.coverageSummary.after,
+    result.recommendationExplainer.coverageSummary.targetDays,
+  );
+  const projectedConfig = statusConfig[projectedStatus];
+  const hasActionablePurchase = result.cheapestNextPurchase.estimatedCost > 0;
   const explanationText = result.survivalScore === 'Safe'
     ? `Your current pantry and remaining RM${input.budget.toFixed(2)} budget can cover the next ${input.daysLeft} days with a comfortable margin.`
     : result.survivalScore === 'Critical'
@@ -48,7 +66,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div {...fadeUp} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1">Your JiMAT+ Results</h2>
-          <p className="text-sm text-muted-foreground mb-6">Your food situation at a glance.</p>
+          <p className="text-sm text-muted-foreground mb-6">A clear next-step decision before the gap becomes critical.</p>
         </motion.div>
 
         <motion.div
@@ -85,29 +103,13 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             <div>
               <p className="text-sm font-semibold text-foreground mb-1">How this works</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                A survival estimate based on your pantry, serving assumptions, and remaining budget. Adding quantities like "3 eggs" improves accuracy.
+                JiMAT+ scores your current position from pantry coverage, simple serving assumptions, and what your remaining budget can still support.
               </p>
             </div>
           </div>
         </motion.div>
 
-        <motion.div
-          {...fadeUp}
-          transition={{ delay: 0.18, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <MapPinned className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-1">{result.recommendationExplainer.selectedPricingContextLabel}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{result.recommendationExplainer.selectedPricingContextNote}</p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.18, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -126,7 +128,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div
           {...fadeUp}
-          transition={{ delay: 0.25, duration: 0.4 }}
+          transition={{ delay: 0.22, duration: 0.4 }}
           className={`p-4 rounded-2xl mb-4 border ${
             result.survivalScore === 'Critical' ? 'bg-status-critical/5 border-status-critical/20' :
             result.survivalScore === 'Tight' ? 'bg-status-tight/5 border-status-tight/20' :
@@ -148,7 +150,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div
           {...fadeUp}
-          transition={{ delay: 0.3, duration: 0.4 }}
+          transition={{ delay: 0.28, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-elevated border border-primary/15 mb-4"
         >
           <div className="flex items-start gap-3">
@@ -171,16 +173,16 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
 
         <motion.div
           {...fadeUp}
-          transition={{ delay: 0.35, duration: 0.4 }}
+          transition={{ delay: 0.34, duration: 0.4 }}
           className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
             <Scale className="w-4 h-4 text-primary" />
-            <span className="font-label text-foreground">Why JiMAT+ Chose This</span>
+            <span className="font-label text-foreground">Why This Recommendation Holds Up</span>
           </div>
-          <div className="space-y-3">
+          <div className="grid gap-3">
             <div className="rounded-xl bg-muted/40 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pantry signal</p>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pantry meals detected</p>
               <p className="mt-1 text-sm text-foreground">
                 {result.recommendationExplainer.pantryMealCount > 0
                   ? `${result.recommendationExplainer.pantryMealCount} pantry-supported meal options were detected before any purchase.`
@@ -188,29 +190,19 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
               </p>
             </div>
             <div className="rounded-xl bg-muted/40 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Unlock ingredient</p>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Key missing ingredient</p>
               <p className="mt-1 text-sm text-foreground">
                 Missing ingredient with the strongest low-cost impact: <span className="font-semibold capitalize">{result.recommendationExplainer.selectedMissingIngredient ?? 'none'}</span>.
               </p>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {result.recommendationExplainer.purchaseRationale}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-muted/50 p-4 text-center border border-border/30">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1">Before</span>
-              <p className="font-mono text-xl font-bold text-foreground">
-                {result.recommendationExplainer.coverageSummary.beforeDisplay}
+            <div className="rounded-xl bg-primary/8 p-3 border border-primary/15">
+              <p className="text-[11px] uppercase tracking-wider text-primary">Coverage improvement</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {result.recommendationExplainer.coverageSummary.label}
               </p>
-              <span className="text-[10px] text-muted-foreground">days</span>
-            </div>
-            <div className="rounded-xl bg-primary/8 p-4 text-center border border-primary/15">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold block mb-1">After</span>
-              <p className="font-mono text-xl font-bold text-primary">
-                {result.recommendationExplainer.coverageSummary.afterDisplay}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {result.recommendationExplainer.purchaseRationale}
               </p>
-              <span className="text-[10px] text-muted-foreground">days</span>
             </div>
           </div>
           {result.recommendationExplainer.whyAlternativesLost.length > 0 && (
@@ -223,6 +215,48 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             </div>
           )}
         </motion.div>
+
+        {hasActionablePurchase && (
+          <motion.div
+            {...fadeUp}
+            transition={{ delay: 0.37, duration: 0.4 }}
+            className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <span className="font-label text-foreground">Current Plan vs After Tofu</span>
+            </div>
+            <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 text-sm">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Decision check</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold text-center">Current</div>
+              <div className="text-[11px] uppercase tracking-wider text-primary font-semibold text-center">After buying {result.cheapestNextPurchase.name.toLowerCase()}</div>
+
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Days covered</div>
+              <div className="rounded-xl bg-muted/30 px-3 py-2 text-center font-mono font-semibold text-foreground">
+                {result.recommendationExplainer.coverageSummary.beforeDisplay}
+              </div>
+              <div className="rounded-xl bg-primary/8 px-3 py-2 text-center font-mono font-semibold text-primary">
+                {result.recommendationExplainer.coverageSummary.afterDisplay}
+              </div>
+
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Survival status</div>
+              <div className={`rounded-xl px-3 py-2 text-center font-semibold ${config.bg} ${config.text}`}>
+                {result.survivalScore}
+              </div>
+              <div className={`rounded-xl px-3 py-2 text-center font-semibold ${projectedConfig.bg} ${projectedConfig.text}`}>
+                {projectedStatus}
+              </div>
+
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Budget after action</div>
+              <div className="rounded-xl bg-muted/30 px-3 py-2 text-center font-mono font-semibold text-foreground">
+                RM{input.budget.toFixed(2)}
+              </div>
+              <div className="rounded-xl bg-primary/8 px-3 py-2 text-center font-mono font-semibold text-primary">
+                RM{result.budgetAfterShopping.toFixed(2)}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           {...fadeUp}
