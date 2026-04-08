@@ -72,19 +72,6 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           You have not run out yet. JiMAT+ helps you act before food insecurity becomes critical.
         </motion.p>
 
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          whileHover={{ scale: 1.03, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onStart}
-          className="inline-flex items-center gap-3 gradient-warm text-primary-foreground px-10 py-4.5 rounded-2xl text-base font-semibold shadow-glow transition-all hover:shadow-elevated"
-        >
-          Start My JiMAT+ Check
-          <ArrowRight className="w-5 h-5" />
-        </motion.button>
-
         <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3">
           {VALUE_HIGHLIGHTS.map(({ icon: Icon, title, text, delay }) => (
             <motion.div
@@ -92,9 +79,9 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay }}
-              className="glass-card rounded-2xl p-4 text-left hover:shadow-card transition-shadow duration-300"
+              className="glass-card rounded-2xl p-4 text-center hover:shadow-card transition-shadow duration-300"
             >
-              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center mb-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center mb-3 mx-auto">
                 <Icon className="w-4.5 h-4.5 text-primary" />
               </div>
               <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-1">{title}</p>
@@ -103,11 +90,24 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           ))}
         </div>
 
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.65 }}
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onStart}
+          className="mt-10 inline-flex items-center gap-3 gradient-warm text-primary-foreground px-10 py-4.5 rounded-2xl text-base font-semibold shadow-glow transition-all hover:shadow-elevated"
+        >
+          Start My JiMAT+ Check
+          <ArrowRight className="w-5 h-5" />
+        </motion.button>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.4 }}
-          className="mt-10 text-xs text-muted-foreground/40 font-medium tracking-wide"
+          className="mt-4 text-xs text-muted-foreground/40 font-medium tracking-wide"
         >
           No login · Private · Built for students
         </motion.p>
