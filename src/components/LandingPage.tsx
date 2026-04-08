@@ -25,64 +25,52 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         className="max-w-xl w-full text-center relative z-10"
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-3xl px-8 py-10 mb-8"
-          style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.04))',
-            border: '1px solid hsl(var(--primary) / 0.15)',
-            boxShadow: '0 8px 40px -12px hsl(var(--primary) / 0.25), 0 0 60px -20px hsl(var(--primary) / 0.15)',
-          }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-card mb-4"
         >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-card mb-4"
-          >
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+ Score</span>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xs sm:text-sm uppercase tracking-[0.24em] text-muted-foreground/75 mb-4"
-          >
-            Student Food Security Decision Engine
-          </motion.p>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.08] text-foreground mb-5"
-            style={{ textWrap: 'balance' }}
-          >
-            Can your food and budget
-            <span className="text-primary"> really last until allowance day?</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
-          >
-            Enter your remaining budget, pantry items, and pricing context. JiMAT+ estimates meal coverage, recommends the cheapest stabilizing action, and surfaces support before the gap becomes critical.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-sm text-muted-foreground/60 max-w-sm mx-auto italic"
-          >
-            You have not run out yet. JiMAT+ helps you act before food insecurity becomes critical.
-          </motion.p>
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold text-primary tracking-wide">JiMAT+ Score</span>
         </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          className="text-xs sm:text-sm uppercase tracking-[0.24em] text-muted-foreground/75 mb-4"
+        >
+          Student Food Security Decision Engine
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.08] text-foreground mb-5"
+          style={{ textWrap: 'balance' }}
+        >
+          Can your food and budget
+          <span className="text-primary"> really last until allowance day?</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
+        >
+          Enter your remaining budget, pantry items, and pricing context. JiMAT+ estimates meal coverage, recommends the cheapest stabilizing action, and surfaces support before the gap becomes critical.
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-sm text-muted-foreground/60 mb-10 max-w-sm mx-auto italic"
+        >
+          You have not run out yet. JiMAT+ helps you act before food insecurity becomes critical.
+        </motion.p>
 
         <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3">
           {VALUE_HIGHLIGHTS.map(({ icon: Icon, title, text, delay }) => (
