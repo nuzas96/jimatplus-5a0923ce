@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, ArrowRight, BarChart3, ChefHat, ChevronLeft, HeartHandshake, Info, Scale, ShoppingBag, TrendingDown, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, ChefHat, ChevronLeft, HeartHandshake, Scale, ShoppingBag, TrendingDown, Zap } from 'lucide-react';
 import { SurvivalResult, UserInput } from '@/lib/types';
 
 interface ResultsDashboardProps {
@@ -91,24 +91,6 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </div>
         </motion.div>
 
-        <motion.div
-          {...fadeUp}
-          transition={{ delay: 0.16, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Info className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-1">How this works</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                JiMAT+ scores your current position from pantry coverage, simple serving assumptions, and what your remaining budget can still support.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
         <motion.div {...fadeUp} transition={{ delay: 0.18, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50">
             <div className="flex items-center gap-2 mb-2">
@@ -162,11 +144,17 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
                 {result.cheapestNextPurchase.estimatedCost > 0 ? 'Best Next Purchase' : 'Best Next Step'}
               </span>
               <p className="text-foreground font-semibold text-sm">
-                {result.cheapestNextPurchase.estimatedCost > 0
-                  ? `Buy ${result.cheapestNextPurchase.name.toLowerCase()} for RM${result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.`
+                {result.survivalScore === 'Safe'
+                  ? 'No urgent purchase needed. Your current pantry and budget already cover this period.'
+                  : result.cheapestNextPurchase.estimatedCost > 0
+                  ? `Buy ${result.cheapestNextPurchase.name.toLowerCase()} for RM${result.cheapestNextPurchase.estimatedCost.toFixed(2)} to improve coverage to ${result.recommendationExplainer.coverageSummary.afterDisplay} days.`
                   : 'Do not spend your remaining budget yet. Stretch what you have first and seek support if the gap becomes unsafe.'}
               </p>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                {result.cheapestNextPurchase.estimatedCost > 0
+                  ? 'Low cost, practical, and enough to unlock more affordable meals.'
+                  : result.cheapestNextPurchase.reason}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -178,30 +166,29 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         >
           <div className="flex items-center gap-2 mb-3">
             <Scale className="w-4 h-4 text-primary" />
-            <span className="font-label text-foreground">Why This Recommendation Holds Up</span>
+            <span className="font-label text-foreground">Why This Works</span>
           </div>
           <div className="grid gap-3">
             <div className="rounded-xl bg-muted/40 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pantry meals detected</p>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pantry meals</p>
               <p className="mt-1 text-sm text-foreground">
                 {result.recommendationExplainer.pantryMealCount > 0
                   ? `${result.recommendationExplainer.pantryMealCount} pantry-supported meal options were detected before any purchase.`
-                  : 'No full pantry-supported meals were detected yet, so the engine looked for the cheapest stabilizing action.'}
+                  : 'No full pantry-supported meals were detected yet.'}
               </p>
             </div>
             <div className="rounded-xl bg-muted/40 p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Key missing ingredient</p>
               <p className="mt-1 text-sm text-foreground">
-                Missing ingredient with the strongest low-cost impact: <span className="font-semibold capitalize">{result.recommendationExplainer.selectedMissingIngredient ?? 'none'}</span>.
+                {result.survivalScore === 'Safe'
+                  ? 'No additional ingredient is needed for this period.'
+                  : <><span className="font-semibold capitalize">{result.recommendationExplainer.selectedMissingIngredient ?? 'None'}</span> has the strongest low-cost impact.</>}
               </p>
             </div>
             <div className="rounded-xl bg-primary/8 p-3 border border-primary/15">
               <p className="text-[11px] uppercase tracking-wider text-primary">Coverage improvement</p>
               <p className="mt-1 text-sm font-semibold text-foreground">
                 {result.recommendationExplainer.coverageSummary.label}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {result.recommendationExplainer.purchaseRationale}
               </p>
             </div>
           </div>
@@ -265,7 +252,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         >
           <div className="flex items-center gap-2 mb-3">
             <ChefHat className="w-4 h-4 text-status-safe" />
-            <span className="font-label text-foreground">Meals From Your Pantry</span>
+            <span className="font-label text-foreground">Meals You Can Already Make</span>
           </div>
           {result.recommendationExplainer.pantryMealNames.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -286,7 +273,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
             transition={{ delay: 0.45, duration: 0.4 }}
             className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-8"
           >
-            <span className="font-label text-foreground block mb-3">Other Options Considered</span>
+            <span className="font-label text-foreground block mb-3">Other Options</span>
             <div className="space-y-2">
               {result.recommendationExplainer.comparisonItems.map(option => (
                 <div
