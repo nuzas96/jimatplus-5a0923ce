@@ -15,14 +15,8 @@ const fadeUp = {
 };
 
 function getStatusFromCoverage(coverage: number, targetDays: number): 'Safe' | 'Tight' | 'Critical' {
-  if (coverage >= targetDays) {
-    return 'Safe';
-  }
-
-  if (coverage >= targetDays * 0.7) {
-    return 'Tight';
-  }
-
+  if (coverage >= targetDays) return 'Safe';
+  if (coverage >= targetDays * 0.7) return 'Tight';
   return 'Critical';
 }
 
@@ -41,6 +35,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
     result.recommendationExplainer.coverageSummary.after,
     result.recommendationExplainer.coverageSummary.targetDays,
   );
+  const budgetSpentPercent = hasPurchase ? (result.cheapestNextPurchase.estimatedCost / input.budget) * 100 : 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
@@ -68,7 +63,7 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.08, duration: 0.4 }}
-          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
+          className="glass-card p-4 rounded-2xl mb-4"
         >
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -76,47 +71,51 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {hasPurchase
-                ? 'This recommendation is optimized for survival coverage and affordability, not full nutrition planning or exact household inventory.'
-                : 'This summary reflects the safest next step for your current coverage and budget position, not a full nutrition plan or exact household inventory.'}
+                ? 'Optimized for survival coverage and affordability, not full nutrition planning.'
+                : 'Reflects the safest next step for your coverage and budget position.'}
             </p>
           </div>
         </motion.div>
 
+        {/* Best Next Purchase — product card style */}
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.1, duration: 0.45 }}
-          className="relative bg-card p-6 rounded-3xl shadow-elevated border border-primary/15 mb-4 overflow-hidden"
+          className="relative rounded-3xl shadow-elevated mb-4 overflow-hidden gradient-border"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl gradient-warm flex items-center justify-center shadow-sm">
-                <ShoppingCart className="w-5 h-5 text-primary-foreground" />
+          <div className="bg-card p-6">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/[0.04] rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl gradient-warm flex items-center justify-center shadow-sm">
+                  <ShoppingCart className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <span className="font-label text-primary">{hasPurchase ? 'Best Next Purchase' : 'Best Next Step'}</span>
+                </div>
               </div>
-              <div>
-                <span className="font-label text-primary">{hasPurchase ? 'Best Next Purchase' : 'Best Next Step'}</span>
-              </div>
+              <h3 className="text-foreground text-2xl font-bold">{result.cheapestNextPurchase.name}</h3>
+              <p className="font-mono text-lg text-primary font-semibold mt-1">
+                RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
             </div>
-            <h3 className="text-foreground text-2xl font-bold">{result.cheapestNextPurchase.name}</h3>
-            <p className="font-mono text-lg text-primary font-semibold mt-1">
-              RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
           </div>
         </motion.div>
 
+        {/* Budget breakdown with visual bar */}
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.2, duration: 0.4 }}
-          className="bg-card rounded-2xl shadow-card border border-border/50 mb-4 overflow-hidden"
+          className="glass-card rounded-2xl mb-4 overflow-hidden"
         >
-          <div className="p-4 border-b border-border/50">
+          <div className="p-4 border-b border-border/40">
             <div className="flex items-center gap-2">
               <Wallet className="w-4 h-4 text-primary" />
               <span className="font-label text-foreground">Budget Breakdown</span>
             </div>
           </div>
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border/40">
             <div className="flex items-center justify-between p-4">
               <span className="text-sm text-muted-foreground">Starting Budget</span>
               <span className="font-mono font-semibold text-foreground">RM{input.budget.toFixed(2)}</span>
@@ -125,7 +124,20 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
               <span className="text-sm text-muted-foreground">Suggested Spend</span>
               <span className="font-mono font-semibold text-status-tight">- RM{result.cheapestNextPurchase.estimatedCost.toFixed(2)}</span>
             </div>
-            <div className="flex items-center justify-between p-4 bg-status-safe/5">
+            {hasPurchase && (
+              <div className="px-4 py-3">
+                <div className="w-full h-2 bg-muted/40 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${100 - budgetSpentPercent}%` }}
+                    transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
+                    className="h-full gradient-warm rounded-full"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5 text-right">{(100 - budgetSpentPercent).toFixed(0)}% of budget preserved</p>
+              </div>
+            )}
+            <div className="flex items-center justify-between p-4 bg-status-safe/[0.04]">
               <span className="text-sm font-semibold text-foreground">Remaining Budget</span>
               <span className="font-mono font-bold text-status-safe-foreground text-lg">RM{result.budgetAfterShopping.toFixed(2)}</span>
             </div>
@@ -133,13 +145,13 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
         </motion.div>
 
         <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
+          <div className="glass-card p-4 rounded-2xl text-center">
             <span className="font-label text-muted-foreground block mb-2">Meals Unlocked</span>
             <span className="font-mono text-2xl font-bold text-foreground">
               {selectedComparison?.mealsUnlocked ?? result.cheapestNextPurchase.mealsUnlocked}
             </span>
           </div>
-          <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50 text-center">
+          <div className="glass-card p-4 rounded-2xl text-center">
             <span className="font-label text-muted-foreground block mb-2">Coverage</span>
             <div className="flex items-center justify-center gap-1">
               <ArrowUpRight className={`w-4 h-4 ${coverageChanged ? 'text-status-safe' : 'text-muted-foreground'}`} />
@@ -154,20 +166,20 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           <motion.div
             {...fadeUp}
             transition={{ delay: 0.34, duration: 0.4 }}
-            className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
+            className="glass-card p-5 rounded-2xl mb-4"
           >
             <p className="text-sm font-semibold text-foreground mb-3">Before vs After This Purchase</p>
             <div className="space-y-2">
-              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 items-center">
                 <span className="text-xs font-medium text-muted-foreground">Days covered</span>
-                <span className="rounded-lg bg-muted/30 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
+                <span className="rounded-lg bg-muted/20 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
                   {result.recommendationExplainer.coverageSummary.beforeDisplay}
                 </span>
                 <span className="rounded-lg bg-primary/8 px-3 py-2 text-center font-mono text-sm font-semibold text-primary">
                   {result.recommendationExplainer.coverageSummary.afterDisplay}
                 </span>
               </div>
-              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 items-center">
                 <span className="text-xs font-medium text-muted-foreground">Survival status</span>
                 <span className={`rounded-lg px-3 py-2 text-center text-sm font-semibold ${statusColors[result.survivalScore]}`}>
                   {result.survivalScore}
@@ -176,9 +188,9 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
                   {projectedStatus}
                 </span>
               </div>
-              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 items-center">
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 items-center">
                 <span className="text-xs font-medium text-muted-foreground">Budget after action</span>
-                <span className="rounded-lg bg-muted/30 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
+                <span className="rounded-lg bg-muted/20 px-3 py-2 text-center font-mono text-sm font-semibold text-foreground">
                   RM{input.budget.toFixed(2)}
                 </span>
                 <span className="rounded-lg bg-primary/8 px-3 py-2 text-center font-mono text-sm font-semibold text-primary">
@@ -189,20 +201,24 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           </motion.div>
         )}
 
+        {/* Warm final message */}
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.4, duration: 0.4 }}
-          className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-8"
+          className="relative rounded-2xl overflow-hidden mb-8"
         >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Heart className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-foreground font-medium mb-1.5">Next move</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {result.finalMessage}
-              </p>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-accent/[0.04]" />
+          <div className="relative glass-card p-5 rounded-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Heart className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-foreground font-medium mb-1.5">Next move</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {result.finalMessage}
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -211,10 +227,10 @@ const ShoppingSummary = ({ result, input, onRestart, onBack }: ShoppingSummaryPr
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.4 }}
-          whileHover={{ scale: 1.01, y: -1 }}
+          whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
           onClick={onRestart}
-          className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
+          className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all hover:shadow-elevated"
         >
           <RotateCcw className="w-4 h-4" />
           Start Over
