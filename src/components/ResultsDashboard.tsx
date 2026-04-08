@@ -10,9 +10,9 @@ interface ResultsDashboardProps {
 }
 
 const statusConfig = {
-  Safe: { bg: 'bg-status-safe/10', text: 'text-status-safe', border: 'border-status-safe/30', badge: 'Safe' },
-  Tight: { bg: 'bg-status-tight/10', text: 'text-status-tight', border: 'border-status-tight/30', badge: 'Tight' },
-  Critical: { bg: 'bg-status-critical/10', text: 'text-status-critical', border: 'border-status-critical/30', badge: 'Critical' },
+  Safe: { bg: 'bg-status-safe/10', text: 'text-status-safe', border: 'border-status-safe', badge: 'Safe' },
+  Tight: { bg: 'bg-status-tight/10', text: 'text-status-tight', border: 'border-status-tight', badge: 'Tight' },
+  Critical: { bg: 'bg-status-critical/10', text: 'text-status-critical', border: 'border-status-critical', badge: 'Critical' },
 };
 
 const confidenceColors = {
@@ -22,8 +22,14 @@ const confidenceColors = {
 };
 
 function getStatusFromCoverage(coverage: number, targetDays: number): 'Safe' | 'Tight' | 'Critical' {
-  if (coverage >= targetDays) return 'Safe';
-  if (coverage >= targetDays * 0.7) return 'Tight';
+  if (coverage >= targetDays) {
+    return 'Safe';
+  }
+
+  if (coverage >= targetDays * 0.7) {
+    return 'Tight';
+  }
+
   return 'Critical';
 }
 
@@ -63,27 +69,24 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <p className="text-sm text-muted-foreground mb-6">A clear next-step decision before the gap becomes critical.</p>
         </motion.div>
 
-        {/* Hero coverage card with gradient border */}
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-3xl shadow-elevated mb-4 overflow-hidden gradient-border"
+          className="relative bg-card rounded-3xl shadow-elevated border border-border/50 p-6 mb-4 overflow-hidden"
         >
-          <div className="bg-card p-6">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/[0.04] rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="relative flex items-center gap-6">
-              <div className={`w-28 h-28 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
-                <div className="font-mono text-5xl font-bold text-foreground leading-none">{result.daysCoveredDisplay}</div>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">days</span>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative flex items-center gap-6">
+            <div className={`w-28 h-28 rounded-2xl ${config.bg} border-2 ${config.border} flex flex-col items-center justify-center flex-shrink-0`}>
+              <div className="font-mono text-4xl font-bold text-foreground leading-none">{result.daysCoveredDisplay}</div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">days</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="font-label text-muted-foreground block mb-1.5">Estimated Days Covered</span>
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${config.bg} ${config.text} text-xs font-bold uppercase tracking-wide`}>
+                {config.badge}
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-label text-muted-foreground block mb-1.5">Estimated Days Covered</span>
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${config.bg} ${config.text} text-xs font-bold uppercase tracking-wide`}>
-                  {config.badge}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{explanationText}</p>
-              </div>
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{explanationText}</p>
             </div>
           </div>
         </motion.div>
@@ -91,7 +94,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.16, duration: 0.4 }}
-          className="glass-card p-4 rounded-2xl mb-4"
+          className="bg-card p-4 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -107,17 +110,14 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         </motion.div>
 
         <motion.div {...fadeUp} transition={{ delay: 0.18, duration: 0.4 }} className="grid grid-cols-2 gap-3 mb-4">
-          <div className={`glass-card p-4 rounded-2xl border-l-[3px] ${config.border}`}>
+          <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="font-label text-muted-foreground">Score</span>
             </div>
             <span className={`text-base font-bold ${config.text}`}>{result.survivalScore}</span>
           </div>
-          <div className={`glass-card p-4 rounded-2xl border-l-[3px] ${
-            result.confidenceLevel === 'High' ? 'border-status-safe/30' :
-            result.confidenceLevel === 'Medium' ? 'border-status-tight/30' : 'border-status-critical/30'
-          }`}>
+          <div className="bg-card p-4 rounded-2xl shadow-card border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="font-label text-muted-foreground">Confidence</span>
@@ -137,14 +137,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         >
           <div className="flex items-start gap-3">
             {result.survivalScore !== 'Safe' ? (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <motion.div
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className={`w-2 h-2 rounded-full ${result.survivalScore === 'Critical' ? 'bg-status-critical' : 'bg-status-tight'}`}
-                />
-                <AlertTriangle className={`w-4 h-4 ${result.survivalScore === 'Critical' ? 'text-status-critical' : 'text-status-tight'}`} />
-              </div>
+              <AlertTriangle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${result.survivalScore === 'Critical' ? 'text-status-critical' : 'text-status-tight'}`} />
             ) : (
               <TrendingDown className="w-4 h-4 mt-0.5 flex-shrink-0 text-status-safe" />
             )}
@@ -155,28 +148,25 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           </div>
         </motion.div>
 
-        {/* Best Next Purchase with subtle glow */}
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.28, duration: 0.4 }}
-          className="relative rounded-2xl shadow-elevated mb-4 overflow-hidden gradient-border"
+          className="bg-card p-5 rounded-2xl shadow-elevated border border-primary/15 mb-4"
         >
-          <div className="bg-card p-5">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl gradient-warm flex items-center justify-center flex-shrink-0 shadow-sm">
-                <ShoppingBag className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <span className="font-label text-primary block mb-1">
-                  {result.cheapestNextPurchase.estimatedCost > 0 ? 'Best Next Purchase' : 'Best Next Step'}
-                </span>
-                <p className="text-foreground font-semibold text-sm">
-                  {result.cheapestNextPurchase.estimatedCost > 0
-                    ? `Buy ${result.cheapestNextPurchase.name.toLowerCase()} for RM${result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.`
-                    : 'Do not spend your remaining budget yet. Stretch what you have first and seek support if the gap becomes unsafe.'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
-              </div>
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl gradient-warm flex items-center justify-center flex-shrink-0 shadow-sm">
+              <ShoppingBag className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <span className="font-label text-primary block mb-1">
+                {result.cheapestNextPurchase.estimatedCost > 0 ? 'Best Next Purchase' : 'Best Next Step'}
+              </span>
+              <p className="text-foreground font-semibold text-sm">
+                {result.cheapestNextPurchase.estimatedCost > 0
+                  ? `Buy ${result.cheapestNextPurchase.name.toLowerCase()} for RM${result.cheapestNextPurchase.estimatedCost.toFixed(2)} to unlock more affordable meal options.`
+                  : 'Do not spend your remaining budget yet. Stretch what you have first and seek support if the gap becomes unsafe.'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{result.cheapestNextPurchase.reason}</p>
             </div>
           </div>
         </motion.div>
@@ -184,14 +174,14 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.34, duration: 0.4 }}
-          className="glass-card p-5 rounded-2xl mb-4"
+          className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
             <Scale className="w-4 h-4 text-primary" />
             <span className="font-label text-foreground">Why This Recommendation Holds Up</span>
           </div>
           <div className="grid gap-3">
-            <div className="rounded-xl bg-muted/30 p-3">
+            <div className="rounded-xl bg-muted/40 p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pantry meals detected</p>
               <p className="mt-1 text-sm text-foreground">
                 {result.recommendationExplainer.pantryMealCount > 0
@@ -199,7 +189,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
                   : 'No full pantry-supported meals were detected yet, so the engine looked for the cheapest stabilizing action.'}
               </p>
             </div>
-            <div className="rounded-xl bg-muted/30 p-3">
+            <div className="rounded-xl bg-muted/40 p-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Key missing ingredient</p>
               <p className="mt-1 text-sm text-foreground">
                 Missing ingredient with the strongest low-cost impact: <span className="font-semibold capitalize">{result.recommendationExplainer.selectedMissingIngredient ?? 'none'}</span>.
@@ -230,38 +220,38 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <motion.div
             {...fadeUp}
             transition={{ delay: 0.37, duration: 0.4 }}
-            className="glass-card p-5 rounded-2xl mb-4"
+            className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
           >
             <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="w-4 h-4 text-primary" />
               <span className="font-label text-foreground">Current Plan vs After This Purchase</span>
             </div>
-            <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 text-sm">
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold px-1">Decision check</div>
+            <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 text-sm">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Decision check</div>
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold text-center">Current</div>
               <div className="text-[11px] uppercase tracking-wider text-primary font-semibold text-center">After buying {result.cheapestNextPurchase.name.toLowerCase()}</div>
 
-              <div className="rounded-xl bg-muted/20 px-3 py-2.5 font-medium text-foreground">Days covered</div>
-              <div className="rounded-xl bg-muted/20 px-3 py-2.5 text-center font-mono font-semibold text-foreground">
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Days covered</div>
+              <div className="rounded-xl bg-muted/30 px-3 py-2 text-center font-mono font-semibold text-foreground">
                 {result.recommendationExplainer.coverageSummary.beforeDisplay}
               </div>
-              <div className="rounded-xl bg-primary/8 px-3 py-2.5 text-center font-mono font-semibold text-primary">
+              <div className="rounded-xl bg-primary/8 px-3 py-2 text-center font-mono font-semibold text-primary">
                 {result.recommendationExplainer.coverageSummary.afterDisplay}
               </div>
 
-              <div className="rounded-xl bg-muted/20 px-3 py-2.5 font-medium text-foreground">Survival status</div>
-              <div className={`rounded-xl px-3 py-2.5 text-center font-semibold ${config.bg} ${config.text}`}>
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Survival status</div>
+              <div className={`rounded-xl px-3 py-2 text-center font-semibold ${config.bg} ${config.text}`}>
                 {result.survivalScore}
               </div>
-              <div className={`rounded-xl px-3 py-2.5 text-center font-semibold ${projectedConfig.bg} ${projectedConfig.text}`}>
+              <div className={`rounded-xl px-3 py-2 text-center font-semibold ${projectedConfig.bg} ${projectedConfig.text}`}>
                 {projectedStatus}
               </div>
 
-              <div className="rounded-xl bg-muted/20 px-3 py-2.5 font-medium text-foreground">Budget after action</div>
-              <div className="rounded-xl bg-muted/20 px-3 py-2.5 text-center font-mono font-semibold text-foreground">
+              <div className="rounded-xl bg-muted/30 px-3 py-2 font-medium text-foreground">Budget after action</div>
+              <div className="rounded-xl bg-muted/30 px-3 py-2 text-center font-mono font-semibold text-foreground">
                 RM{input.budget.toFixed(2)}
               </div>
-              <div className="rounded-xl bg-primary/8 px-3 py-2.5 text-center font-mono font-semibold text-primary">
+              <div className="rounded-xl bg-primary/8 px-3 py-2 text-center font-mono font-semibold text-primary">
                 RM{result.budgetAfterShopping.toFixed(2)}
               </div>
             </div>
@@ -271,7 +261,7 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
         <motion.div
           {...fadeUp}
           transition={{ delay: 0.4, duration: 0.4 }}
-          className="glass-card p-5 rounded-2xl mb-4"
+          className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
             <ChefHat className="w-4 h-4 text-status-safe" />
@@ -294,17 +284,17 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           <motion.div
             {...fadeUp}
             transition={{ delay: 0.45, duration: 0.4 }}
-            className="glass-card p-5 rounded-2xl mb-8"
+            className="bg-card p-5 rounded-2xl shadow-card border border-border/50 mb-8"
           >
             <span className="font-label text-foreground block mb-3">Other Options Considered</span>
             <div className="space-y-2">
               {result.recommendationExplainer.comparisonItems.map(option => (
                 <div
                   key={option.name}
-                  className={`rounded-xl p-3 border transition-all ${
+                  className={`rounded-xl p-3 border ${
                     option.verdict === 'selected'
-                      ? 'border-primary/20 bg-primary/5 shadow-sm'
-                      : 'border-border/40 bg-muted/20 hover:bg-muted/30'
+                      ? 'border-primary/20 bg-primary/5'
+                      : 'border-border/50 bg-muted/30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -349,10 +339,10 @@ const ResultsDashboard = ({ result, input, onViewPlan, onBack }: ResultsDashboar
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.4 }}
-          whileHover={{ scale: 1.02, y: -2 }}
+          whileHover={{ scale: 1.01, y: -1 }}
           whileTap={{ scale: 0.98 }}
           onClick={onViewPlan}
-          className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all hover:shadow-elevated"
+          className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
         >
           View My Survival Plan
           <ArrowRight className="w-5 h-5" />
