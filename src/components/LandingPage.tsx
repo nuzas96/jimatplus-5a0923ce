@@ -56,7 +56,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-base sm:text-lg text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed"
         >
-          Enter your remaining budget, pantry items, and pricing context. JiMAT+ estimates meal coverage, recommends the cheapest stabilizing action, and surfaces support before the gap becomes critical.
+          Enter your remaining budget and pantry items. JiMAT+ tells you how many days you can last and what purchase can change.
         </motion.p>
 
         <motion.p
