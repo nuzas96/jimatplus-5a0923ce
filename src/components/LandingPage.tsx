@@ -68,20 +68,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           You have not run out yet. JiMAT+ helps you act before food insecurity becomes critical.
         </motion.p>
 
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          whileHover={{ scale: 1.02, y: -1 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onStart}
-          className="inline-flex items-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
-        >
-          Start My JiMAT+ Check
-          <ArrowRight className="w-5 h-5" />
-        </motion.button>
-
-        <div className="mt-14 space-y-3 sm:space-y-0 sm:flex sm:flex-col sm:items-center sm:gap-4">
+        <div className="mt-10 flex flex-col items-center gap-3">
           {VALUE_HIGHLIGHTS.map(({ icon: Icon, text, delay }) => (
             <motion.div
               key={text}
@@ -93,16 +80,29 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
               <div className="w-8 h-8 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
                 <Icon className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-sm font-medium">{text}</span>
+              <span className="text-sm font-medium text-center">{text}</span>
             </motion.div>
           ))}
         </div>
+
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.65 }}
+          whileHover={{ scale: 1.02, y: -1 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onStart}
+          className="mt-10 inline-flex items-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all"
+        >
+          Start My JiMAT+ Check
+          <ArrowRight className="w-5 h-5" />
+        </motion.button>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.4 }}
-          className="mt-10 text-xs text-muted-foreground/50 font-medium tracking-wide"
+          className="mt-4 text-xs text-muted-foreground/50 font-medium tracking-wide"
         >
           No login | Private | Built for students
         </motion.p>
