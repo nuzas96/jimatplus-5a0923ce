@@ -8,7 +8,7 @@ interface LandingPageProps {
 const VALUE_HIGHLIGHTS = [
   { icon: Calendar, label: 'Predict', text: 'Know how many days your food can realistically cover', delay: 0.4 },
   { icon: AlertTriangle, label: 'Warn', text: 'See what happens if you don\'t act before allowance day', delay: 0.5 },
-  { icon: ShoppingCart, label: 'Recommend', text: 'Find the cheapest item that extends your coverage', delay: 0.6 },
+  { icon: ShoppingCart, label: 'Recommend', text: 'Find the single cheapest purchase to stabilize your plan.', delay: 0.6 },
 ];
 
 const LandingPage = ({ onStart }: LandingPageProps) => {
