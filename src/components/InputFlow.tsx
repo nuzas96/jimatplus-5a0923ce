@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Clock, Leaf, Minus, Package, Plus, Wallet, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, Clock, Leaf, Minus, Package, Plus, Wallet, X } from 'lucide-react';
 import { DietaryPreference, UserInput } from '@/lib/types';
 import { DEFAULT_PRICING_CONTEXT_ID } from '@/lib/finals-data';
 
@@ -16,6 +16,8 @@ const DIETARY_OPTIONS: Array<{ value: DietaryPreference; label: string; emoji: s
   { value: 'halal-friendly', label: 'Halal-Friendly', emoji: 'Halal' },
   { value: 'low-cost-only', label: 'Low-Cost Only', emoji: 'Budget' },
 ];
+
+const PROGRESS_STEPS = ['Budget', 'Timeline', 'Diet', 'Pantry'];
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 12 },
@@ -46,29 +48,19 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
 
   const setItemQuantity = (item: string, nextQuantity: number) => {
     const normalizedItem = normalizeItemLabel(item);
-    if (!normalizedItem) {
-      return;
-    }
-
+    if (!normalizedItem) return;
     setPantryCounts(previous => {
       if (nextQuantity <= 0) {
         const { [normalizedItem]: _removed, ...remaining } = previous;
         return remaining;
       }
-
-      return {
-        ...previous,
-        [normalizedItem]: nextQuantity,
-      };
+      return { ...previous, [normalizedItem]: nextQuantity };
     });
   };
 
   const incrementItem = (item: string) => {
     const normalizedItem = normalizeItemLabel(item);
-    if (!normalizedItem) {
-      return;
-    }
-
+    if (!normalizedItem) return;
     setPantryCounts(previous => ({
       ...previous,
       [normalizedItem]: Math.min((previous[normalizedItem] ?? 0) + 1, 9),
@@ -82,10 +74,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
 
   const addCustomItem = () => {
     const normalizedItem = normalizeItemLabel(currentItem);
-    if (!normalizedItem) {
-      return;
-    }
-
+    if (!normalizedItem) return;
     incrementItem(normalizedItem);
     setCurrentItem('');
   };
@@ -93,11 +82,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
   const handleSubmit = () => {
     const parsedBudget = Number(budget);
     const parsedDaysLeft = Number(daysLeft);
-
-    if (budget === '' || daysLeft === '' || Number.isNaN(parsedBudget) || Number.isNaN(parsedDaysLeft) || parsedBudget < 0 || parsedDaysLeft <= 0) {
-      return;
-    }
-
+    if (budget === '' || daysLeft === '' || Number.isNaN(parsedBudget) || Number.isNaN(parsedDaysLeft) || parsedBudget < 0 || parsedDaysLeft <= 0) return;
     onSubmit({
       budget: parsedBudget,
       daysLeft: parsedDaysLeft,
@@ -112,12 +97,14 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
     .sort(([left], [right]) => left.localeCompare(right));
   const parsedBudget = Number(budget);
   const parsedDaysLeft = Number(daysLeft);
-  const isValid = budget !== ''
-    && daysLeft !== ''
-    && !Number.isNaN(parsedBudget)
-    && !Number.isNaN(parsedDaysLeft)
-    && parsedBudget >= 0
-    && parsedDaysLeft > 0;
+  const isValid = budget !== '' && daysLeft !== '' && !Number.isNaN(parsedBudget) && !Number.isNaN(parsedDaysLeft) && parsedBudget >= 0 && parsedDaysLeft > 0;
+
+  const completedSteps = [
+    budget !== '' && !Number.isNaN(parsedBudget) && parsedBudget >= 0,
+    daysLeft !== '' && !Number.isNaN(parsedDaysLeft) && parsedDaysLeft > 0,
+    true, // dietary always has a default
+    pantryEntries.length > 0,
+  ];
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-surface">
@@ -131,21 +118,42 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8 hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6 hover:text-foreground transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           Back
         </motion.button>
 
+        {/* Progress indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="flex items-center gap-1 mb-8"
+        >
+          {PROGRESS_STEPS.map((step, i) => (
+            <div key={step} className="flex items-center gap-1 flex-1">
+              <div className={`flex items-center gap-1.5 flex-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all duration-300 ${
+                completedSteps[i]
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted/60 text-muted-foreground/50'
+              }`}>
+                {completedSteps[i] ? <Check className="w-3 h-3" /> : <span className="w-3 h-3 rounded-full border border-current opacity-40" />}
+                <span className="hidden sm:inline">{step}</span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="visible">
           <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-2">
             Tell us your current food situation
           </h2>
-          <p className="text-muted-foreground text-sm mb-2">
+          <p className="text-muted-foreground text-sm mb-1.5">
             JiMAT+ turns your remaining budget and pantry into a fast survival decision.
           </p>
-          <p className="text-xs text-muted-foreground/70 mb-8">
-            Keep it simple. Add quantities when you can for a stronger estimate.
+          <p className="text-xs text-muted-foreground/60 mb-8">
+            Add quantities when you can for a stronger estimate.
           </p>
         </motion.div>
 
@@ -154,7 +162,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
+          className="glass-card p-5 rounded-2xl shadow-card mb-3"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -172,7 +180,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
               className="flex-1 bg-transparent font-mono text-2xl text-foreground outline-none placeholder:text-muted-foreground/30 focus:ring-0 rounded-lg px-1 py-1 transition-all"
             />
           </div>
-          <p className="text-xs text-muted-foreground/60 mt-2">How much money do you have left for food?</p>
+          <p className="text-xs text-muted-foreground/50 mt-2">How much money do you have left for food?</p>
         </motion.div>
 
         <motion.div
@@ -180,7 +188,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
+          className="glass-card p-5 rounded-2xl shadow-card mb-3"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -195,7 +203,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             placeholder="3"
             className="w-full bg-transparent font-mono text-2xl text-foreground outline-none placeholder:text-muted-foreground/30 focus:ring-0 rounded-lg px-1 py-1 transition-all"
           />
-          <p className="text-xs text-muted-foreground/60 mt-2">How many days do you need to get through?</p>
+          <p className="text-xs text-muted-foreground/50 mt-2">How many days do you need to get through?</p>
         </motion.div>
 
         <motion.div
@@ -203,7 +211,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="bg-card p-5 rounded-2xl shadow-card mb-3 border border-border/50"
+          className="glass-card p-5 rounded-2xl shadow-card mb-3"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 rounded-lg bg-status-safe/10 flex items-center justify-center">
@@ -219,7 +227,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
                 className={`flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
                   dietary === option.value
                     ? 'bg-primary/10 text-primary border-primary/25 shadow-sm'
-                    : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:border-border/50'
+                    : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/60 hover:border-border/50'
                 }`}
               >
                 <span>{option.label}</span>
@@ -234,7 +242,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="bg-card p-5 rounded-2xl shadow-card mb-8 border border-border/50"
+          className="glass-card p-5 rounded-2xl shadow-card mb-8"
         >
           <div className="flex items-center gap-2 mb-1">
             <div className="w-7 h-7 rounded-lg bg-status-tight/10 flex items-center justify-center">
@@ -242,27 +250,26 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
             </div>
             <label className="font-label text-muted-foreground">What Do You Still Have At Home?</label>
           </div>
-          <p className="text-xs text-muted-foreground/60 mb-3 ml-9">
-            Tap items to add them. Quantities like "3 eggs" improve the estimate.
+          <p className="text-xs text-muted-foreground/50 mb-3 ml-9">
+            Tap items to add them. Quantities improve the estimate.
           </p>
 
           <div className="flex flex-wrap gap-1.5 mb-4">
             {COMMON_ITEMS.map(item => {
               const quantity = pantryCounts[item] ?? 0;
-
               return (
                 <motion.button
                   key={item}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => incrementItem(item)}
-                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors border font-medium ${
+                  className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 border font-medium ${
                     quantity > 0
-                      ? 'bg-primary/10 text-primary border-primary/20'
-                      : 'bg-muted/60 text-muted-foreground hover:bg-muted border-border/30'
+                      ? 'bg-primary/12 text-primary border-primary/20 shadow-sm'
+                      : 'bg-muted/50 text-muted-foreground hover:bg-muted/70 border-border/30'
                   }`}
                 >
-                  {quantity > 0 ? `${item} x${quantity}` : `+ ${item}`}
+                  {quantity > 0 ? `${item} ×${quantity}` : `+ ${item}`}
                 </motion.button>
               );
             })}
@@ -275,7 +282,7 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
               onChange={event => setCurrentItem(event.target.value)}
               onKeyDown={event => event.key === 'Enter' && addCustomItem()}
               placeholder="Add custom item, e.g. bananas"
-              className="flex-1 bg-muted/40 rounded-xl px-4 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border/30"
+              className="flex-1 bg-muted/30 rounded-xl px-4 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 transition-all border border-border/30"
             />
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -339,8 +346,8 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           </AnimatePresence>
 
           {pantryEntries.length === 0 && (
-            <p className="text-xs text-muted-foreground/50 italic text-center py-2">
-              No items added yet - that&apos;s okay, JiMAT+ can still estimate from budget only
+            <p className="text-xs text-muted-foreground/40 italic text-center py-2">
+              No items added yet — JiMAT+ can still estimate from budget only
             </p>
           )}
         </motion.div>
@@ -350,11 +357,12 @@ const InputFlow = ({ onSubmit, onBack }: InputFlowProps) => {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          whileHover={{ scale: 1.01, y: -1 }}
+          whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSubmit}
           disabled={!isValid}
-          className="w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
+          className={`w-full inline-flex items-center justify-center gap-3 gradient-warm text-primary-foreground px-8 py-4 rounded-2xl text-base font-semibold shadow-glow transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none ${isValid ? 'animate-pulse-soft' : ''}`}
+          style={isValid ? { animationDuration: '3s' } : undefined}
         >
           Generate My JiMAT+ Plan
           <ArrowRight className="w-5 h-5" />
